@@ -2,10 +2,12 @@
 import { useEffect, useRef, type ReactNode } from "react";
 export default function ProtocolDialog({
   title,
+  fullScreen = false,
   onClose,
   children,
 }: {
   title: string;
+  fullScreen?: boolean;
   onClose: () => void;
   children: ReactNode;
 }) {
@@ -34,7 +36,7 @@ export default function ProtocolDialog({
         event.preventDefault();
         savedClose.current();
       }}
-      className="fixed inset-x-0 bottom-0 top-auto m-0 max-h-[92dvh] w-full max-w-none overflow-y-auto rounded-t-xl border border-line bg-surface p-5 text-foreground backdrop:bg-foreground/35 sm:inset-0 sm:m-auto sm:max-w-xl sm:rounded-md sm:p-7"
+      className={fullScreen ? "fixed inset-0 m-0 h-dvh max-h-none w-screen max-w-none overflow-y-auto border-0 bg-background p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] text-foreground backdrop:bg-background sm:p-7" : "fixed inset-x-0 bottom-0 top-auto m-0 max-h-[92dvh] w-full max-w-none overflow-y-auto rounded-t-xl border border-line bg-surface p-5 text-foreground backdrop:bg-foreground/35 sm:inset-0 sm:m-auto sm:max-w-xl sm:rounded-md sm:p-7"}
     >
       <div className="mb-5 flex items-start justify-between gap-4">
         <h2

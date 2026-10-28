@@ -16,6 +16,7 @@ import ProtocolDialog from "@/components/protocol/ProtocolDialog";
 type Send = (body: Record<string, unknown>) => Promise<unknown>;
 export default function BookingDetails({
   disabled = false,
+  fullScreen = false,
   booking: b,
   slots,
   admin,
@@ -24,6 +25,7 @@ export default function BookingDetails({
   send,
 }: {
   disabled?: boolean;
+  fullScreen?: boolean;
   booking: ExhibitionBooking;
   slots: BookingSlot[];
   admin: boolean;
@@ -114,6 +116,7 @@ export default function BookingDetails({
   return (
     <ProtocolDialog
       title="تفاصيل حجز المعرض"
+      fullScreen={fullScreen}
       onClose={() => {
         if (!busy) onClose();
       }}

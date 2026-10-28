@@ -14,14 +14,15 @@ export function useProtocolSounds(userId?: string) {
     const audio = new SoundController(() => {
       const Constructor = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (!Constructor) throw Error("unsupported");
-      return new Constructor();
+      return new Constructor({ latencyHint: "interactive" });
     }, storage, "abaad:sounds:" + userId, state => { if (alive) setStatus(state); });
     controller.current = audio;
     queueMicrotask(() => { if (alive) setStatus(audio.status); });
     return () => { alive = false; audio.dispose(); controller.current = null; };
   }, [userId]);
   const play = useCallback((name: SoundName, id: string) => controller.current?.play(name, id), []);
-  const enable = useCallback(() => { void controller.current?.enable(); }, []);
+  const enable = useCallback(() => { void controller.current?.test(); }, []);
   const mute = useCallback(() => controller.current?.mute(), []);
-  return { status, play, enable, mute };
+  const unlock = useCallback(() => { void controller.current?.unlock(); }, []);
+  return { status, play, enable, mute, unlock, testSound: enable };
 }

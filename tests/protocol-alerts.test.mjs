@@ -161,3 +161,29 @@ test("scan feedback takes priority when a rapid booking burst saturates the soun
   assert.equal(f.nodes.at(-2).startAt, 0);
   f.controller.dispose();
 });
+test("scan gesture reactivates an interrupted audio context without overriding a saved mute", async () => {
+  const muted = audioFixture({ stored: "off" }); await muted.controller.unlock();
+  assert.equal(muted.resumes(), 0); assert.equal(muted.controller.status, "muted"); muted.controller.dispose();
+  const f = audioFixture(); await f.controller.enable(); f.ctx.state = "suspended"; f.ctx.onstatechange();
+  await f.controller.unlock(); assert.equal(f.resumes(), 2); assert.equal(f.controller.status, "ready");
+  assert.equal(f.nodes.length, 0); // Opening the camera must not play a false verification sound.
+  assert.equal(f.controller.play("scan_success", "verified"), true); f.controller.dispose();
+});
+test("explicit sound test really schedules audible source nodes after activation", async () => {
+  const f = audioFixture(); await f.controller.test();
+  assert.equal(f.controller.status, "ready"); assert.equal(f.nodes.length, 2);
+  assert.ok(f.nodes.every(node => node.type === "triangle"));
+  await f.controller.test(); assert.equal(f.nodes.length, 4); f.controller.dispose();
+});
+test("a deliberate new camera session permits the same QR while repeated frames remain gated", () => {
+  const gate = new ScanGate(() => 0);
+  assert.equal(gate.enter(raw), true); gate.reset(); assert.equal(gate.enter(raw), false);
+  gate.leave(); gate.reset(); assert.equal(gate.enter(raw), true); assert.equal(gate.enter(raw), false);
+});
+test("fresh scan details cannot regress to an older list cache after verification", () => {
+  const { currentScannedBooking } = load("src/lib/bookings/scan.ts");
+  const verified = row("checked", 1, { updated_at: at(20), checked_in_guest_count: 1 });
+  assert.equal(currentScannedBooking(verified, [row("checked", 1, { updated_at: at(10) })]), verified);
+  const updated = row("checked", 1, { updated_at: at(30), checked_in_guest_count: 2 });
+  assert.equal(currentScannedBooking(verified, [updated]), updated);
+});

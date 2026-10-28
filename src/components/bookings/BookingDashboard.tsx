@@ -3,15 +3,15 @@ import LiveStatus from "@/components/live/LiveStatus";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useBookings } from "@/lib/bookings/useBookings";
 import BookingDetails from "./BookingDetails";
-import QrReader from "./QrReader";
+import ScanScreen from "./ScanScreen";
+import type { ExhibitionBooking } from "@/types/bookings";
 import SlotManagement from "./SlotManagement";
 import GuestList from "@/components/protocol/GuestList";
 import GuestDetails from "@/components/protocol/GuestDetails";
 import type { Guest } from "@/types/protocol";
 import { useProtocolSounds } from "@/lib/audio/useProtocolSounds";
-import { verifyBookingCode, ScanGate, type ScanResult } from "@/lib/bookings/scan";
+import { verifyBookingCode, ScanGate, currentScannedBooking, type ScanResult } from "@/lib/bookings/scan";
 import SoundControl from "./SoundControl";
-import LoadingIndicator from "@/components/ui/LoadingIndicator";
 export type BookingToolbarActions = {
   unread: number;
   notificationsOpen: boolean;
@@ -20,6 +20,9 @@ export type BookingToolbarActions = {
   onScan: () => void;
   closePanels: () => void;
 };
+function ToolbarSlot({ render, actions }: { render: (actions: BookingToolbarActions) => ReactNode; actions: BookingToolbarActions }) {
+  return <>{render(actions)}</>;
+}
 export default function BookingDashboard({
   admin = false,
   collapsed = false,
@@ -40,12 +43,13 @@ export default function BookingDashboard({
     [guest, setGuest] = useState<Guest | null>(null);
   const sounds = useProtocolSounds(soundUserId);
   const [scanResult, setScanResult] = useState<ScanResult | "pending" | null>(null);
+  const [scanBooking, setScanBooking] = useState<ExhibitionBooking | null>(null);
   const [dismissedNotice, setDismissedNotice] = useState("");
   const scanGate = useRef(new ScanGate());
   const scanRequest = useRef<AbortController | null>(null);
   const scanSequence = useRef(0);
   const latestNotice = h.notices.at(-1);
-  const { play } = sounds;
+  const { play, unlock } = sounds;
   useEffect(() => {
     if (!soundUserId) return;
     for (const notice of h.notices) play("new_booking", "booking:" + notice.id);
@@ -56,6 +60,19 @@ export default function BookingDashboard({
     return () => clearTimeout(timer);
   }, [latestNotice]);
   useEffect(() => () => scanRequest.current?.abort(), []);
+  const openScan = useCallback(() => {
+    unlock();
+    scanGate.current.reset();
+    setSelected(null); setGuest(null); setScanBooking(null);
+    setScanResult(null); setBell(false); setCamera(true);
+  }, [unlock]);
+  const closeScan = useCallback(() => {
+    scanRequest.current?.abort();
+    setCamera(false); setScanResult(null);
+  }, []);
+  const matched = useCallback((booking: ExhibitionBooking) => {
+    setScanResult(null); setScanBooking(booking);
+  }, []);
   const booking = h.data?.bookings.find((b) => b.id === selected);
   const { setToken, setQ, setDate, setStatus, setPage } = h;
   const onRead = useCallback(async (raw: string) => {
@@ -97,12 +114,12 @@ export default function BookingDashboard({
   }
   return (
     <section aria-label="حجوزات المعرض" className={renderToolbar ? "contents" : "space-y-4"}>
-      {renderToolbar ? renderToolbar({
+      {renderToolbar ? <ToolbarSlot render={renderToolbar} actions={{
         unread: h.unread, notificationsOpen: bell, scannerOpen: camera,
-        onNotifications: () => { setBell(!bell); setCamera(false); h.setUnread(0); },
-        onScan: () => { setCamera(!camera); setBell(false); },
+        onNotifications: () => { unlock(); setBell(!bell); setCamera(false); h.setUnread(0); },
+        onScan: openScan,
         closePanels: () => { setBell(false); setCamera(false); },
-      }) : (
+      }} /> : (
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div hidden={collapsed}>
           <h2 className="text-xl">حجوزات المعرض</h2>
@@ -124,7 +141,7 @@ export default function BookingDashboard({
           </button>
           <button
             type="button"
-            onClick={() => setCamera(!camera)}
+            onClick={openScan}
             className="min-h-11 rounded border border-line bg-surface px-4"
           >
             مسح QR
@@ -132,19 +149,12 @@ export default function BookingDashboard({
         </div>
       </div>
       )}
-      {soundUserId && <SoundControl status={sounds.status} enable={sounds.enable} mute={sounds.mute} />}
+      {soundUserId && <SoundControl status={sounds.status} enable={sounds.enable} mute={sounds.mute} testSound={sounds.testSound} />}
       {h.noticeError && <p role="status" className="mb-3 text-xs text-muted">{h.noticeError}</p>}
       {soundUserId && latestNotice && dismissedNotice !== latestNotice.id && <aside role="status" aria-live="polite" className="fixed bottom-4 right-3 left-3 z-30 mx-auto max-w-sm rounded border border-line bg-surface p-3 text-xs shadow-lg">
         <div className="flex items-center justify-between gap-2"><p>حجز جديد · {latestNotice.full_name}</p><button type="button" aria-label="إغلاق إشعار الحجز" onClick={() => setDismissedNotice(latestNotice.id)} className="min-h-11 min-w-11">×</button></div>
         <p>{latestNotice.visit_date} · {latestNotice.start_time.slice(0, 5)} · {latestNotice.guest_count} أشخاص{h.notices.length > 1 ? " · المزيد في الجرس" : ""}</p>
       </aside>}
-      {scanResult && <div role={scanResult === "pending" || scanResult.kind === "success" ? "status" : "alert"} className="mb-3 rounded border border-line bg-surface p-3 text-sm">
-        {scanResult === "pending" ? <div><LoadingIndicator compact /><p className="text-center text-xs">جارٍ التحقق من الحجز…</p></div> : <>
-          <div className="flex items-center gap-2"><span aria-hidden="true" className={scanResult.kind === "success" ? "text-green-700" : "text-danger"}>{scanResult.kind === "success" ? "✓" : "!"}</span><p>{scanResult.message}</p></div>
-          {scanResult.kind === "success" && <p className="mt-1">{scanResult.booking.full_name} · المتبقي: {scanResult.booking.guest_count - scanResult.booking.checked_in_guest_count}</p>}
-          <button type="button" onClick={() => setScanResult(null)} className="mt-1 min-h-11 px-2 text-xs underline">إغلاق النتيجة</button>
-        </>}
-      </div>}
       {bell && (
         <aside
           className="mb-3 max-h-[50dvh] overflow-y-auto rounded border border-line bg-surface p-4 text-sm"
@@ -165,7 +175,11 @@ export default function BookingDashboard({
           ))}
         </aside>
       )}
-      {camera && <QrReader onRead={onRead} onClose={() => setCamera(false)} />}
+      {(camera || scanResult) && <ScanScreen camera={camera} result={scanResult} onRead={onRead} onClose={closeScan} onRetry={openScan} onMatched={matched} />}
+      {scanBooking && <BookingDetails fullScreen
+        booking={currentScannedBooking(scanBooking, h.data?.bookings || [])}
+        slots={h.data?.slots || []} admin={admin} disabled={!!h.error}
+        send={h.send} onSaved={h.refresh} onClose={() => setScanBooking(null)} />}
       <div id={renderToolbar ? "bookings-panel" : undefined} hidden={collapsed} className="space-y-4">
         <div className="compact-stats grid grid-cols-3 gap-1.5 sm:gap-3 lg:grid-cols-5">
           {[

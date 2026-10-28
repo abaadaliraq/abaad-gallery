@@ -15,6 +15,7 @@ export class SoundController {
   private nodes = new Set<OscillatorNode>();
   private events = new Set<string>();
   private revision = 0;
+  private previews = 0;
   constructor(
     private create: () => AudioContext,
     private storage: Pick<Storage, "getItem" | "setItem">,
@@ -48,6 +49,16 @@ export class SoundController {
     } catch { this.unavailable = !this.context; }
     finally { clearTimeout(timer); if (revision === this.revision) this.publish(); }
   }
+  unlock() {
+    // Called from the scan/notification button gesture. Never override a stored mute.
+    if (!this.wanted || this.closed) return Promise.resolve();
+    if (this.status === "ready") return Promise.resolve();
+    return this.enable();
+  }
+  async test() {
+    await this.enable();
+    if (this.status === "ready") this.play("scan_success", "sound-test:" + ++this.previews);
+  }
   mute() {
     ++this.revision;
     this.wanted = false;
@@ -75,10 +86,10 @@ export class SoundController {
     try {
       for (const [frequency, offset, duration] of tones[name]) {
         const oscillator = ctx.createOscillator(), gain = ctx.createGain();
-        oscillator.type = "sine";
+        oscillator.type = "triangle";
         oscillator.frequency.value = frequency;
         gain.gain.setValueAtTime(0, start + offset);
-        gain.gain.linearRampToValueAtTime(.055, start + offset + .012);
+        gain.gain.linearRampToValueAtTime(.16, start + offset + .012);
         gain.gain.exponentialRampToValueAtTime(.0001, start + offset + duration);
         oscillator.connect(gain); gain.connect(ctx.destination);
         this.nodes.add(oscillator);
