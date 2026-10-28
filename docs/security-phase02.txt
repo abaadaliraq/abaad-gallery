@@ -1,0 +1,184 @@
+ABAAD EXHIBIT — Phase 02
+Security Audit, Database Security & Access Control
+المشروع المحلي: C:\HOA-SYSTEM\gallery-org
+المشروع الخارجي المؤكد: ABAAD-EXHIBIT
+Project reference: pwlwelxnrrignapdsyiw
+
+A. Security Audit — المراجعة والإصلاحات
+
+الأساس السابق كان يرفض الأدوار الخاطئة على الخادم ويستخدم RLS لقراءة السجل الشخصي الفعّال. لم أجد مساراً في التطبيق يسمح للموظف بتغيير دوره، ولم أكتشف تسريب مفتاح أو اختراقاً فعلياً. الاختبارات القديمة وحدها لم تكن كافية لاعتماد الجلسات أو قاعدة البيانات.
+
+الإصلاحات المحلية:
+1. إعداد الاتصال كان يقبل أي نص كمفتاح عام، بما فيه مفتاح سري يوضع بالخطأ. أصبح يرفض sb_secret_* وJWT بدور service_role، ويقبل Publishable أو legacy anon فقط. هذا فحص إعدادات وليس تحقق توقيع JWT؛ التحقق الفعلي لخدمة Supabase.
+2. رفض HTTP البعيد، وبيانات المستخدم/كلمة المرور داخل URL، وquery/hash والمسارات الإضافية. HTTP مسموح فقط لخادم تطوير محلي. أضيف SUPABASE_EXPECTED_PROJECT_REF وثُبّت محلياً على المشروع المؤكد لمنع الربط العرضي بمشروع آخر.
+3. عميل SSR كان يتجاهل كل أخطاء كتابة Cookies، حتى داخل Server Actions. فُصل نمط القراءة الخاص بـServer Components عن نمط الكتابة الصريح لتسجيل الدخول والخروج؛ أخطاء الكتابة لا تتحول إلى نجاح صامت.
+4. أصبح تنظيف الجلسة يجرّب سحب جلسة Supabase الحالية ويمسح Cookies الخاصة بهذا المشروع وقطعها حتى إذا فشل اتصال السحب. لا يمسح Cookies مشروع آخر.
+5. عند تعذّر تأكيد السحب الخارجي، يعود المستخدم إلى البوابة برسالة تشرح أن الجلسة المحلية مُسحت وأن السحب الخارجي غير مؤكد. لا يدّعي التطبيق سحباً خارجياً لم يتم تأكيده.
+6. بعد تسجيل الدخول والخروج يُستخدم انتقال كامل للصفحة لتجنّب الاحتفاظ بعرض محمي قديم في Router Cache. أضيف مكوّن بلا واجهة يعيد التحقق عند استعادة الصفحة من BFCache أو العودة إلى تبويب محمي.
+7. التحقق المشترك يرفض المستخدم Anonymous وغير مؤكد البريد، والسجل غير الفعّال، والدور المجهول، وبيانات الموظف التي لا يطابق user_id فيها المستخدم الموثّق.
+8. أضيفت Database Types وفق المخطط المحلي المقترح، واستُخدمت في عملاء Supabase والاستعلامات بدلاً من عميل غير مقيّد بالمخطط. لم تُولّد هذه الأنواع من قاعدة غير مهيأة؛ تُجدّد بعد النشر المصرح به.
+9. كل جلب Supabase في طبقة الخادم وProxy يستخدم no-store. تُحفظ جميع Cookies المجدّدة عبر عمليات setAll المتعددة، وتبقى استجابات المسارات ذات الجلسات private/no-store.
+10. التحقق من الدور والحالة يُقرأ من الجدول في كل طلب محمي؛ لا LocalStorage للأدوار، ولا اعتماد على user_metadata، ولا use cache حول التفويض.
+
+مراجعة المخاطر:
+- Privilege Escalation: لا منح دور من اختيار البطاقة أو من user_metadata. الكتابة في جدول الأدوار ممنوعة لحسابات التطبيق، بما فيها admin في هذه المرحلة.
+- IDOR/Unauthorized Reads: user_id مقيد بالمستخدم الموثّق في الاستعلام وRLS، مع شرط السجل الفعّال.
+- SQL Injection: لا SQL ديناميكي ولا تركيب استعلام من المدخلات. استعلام الموظف يستخدم eq ومعامل مستخدم جرى توثيقه.
+- Session Manipulation: getUser للتحقق لدى Auth، وRLS المقترحة تتحقق أيضاً من وجود session_id الفعلي وملكيته وانتهائه، بعد تطبيق SQL.
+- RLS Bypass: لا service_role داخل التطبيق. وصول service_role/مالك قاعدة البيانات الموثوق يبقى إدارياً، ولا يُعد حساب admin في التطبيق صاحب هذا التجاوز.
+- لا ادعاء بتدقيق اختراق شامل أو اختبار اختراق مكتمل. لا توجد حتى الآن بيانات أعمال فنية/ضيوف أو جداول مستقبلية لتدقيقها.
+
+B. Database — المخطط والسياسات وحالة التنفيذ
+
+الجداول المرئية في public وabaad_private عند الفحص عبر أداة وصف الجداول: لا توجد جداول. لذلك الاختيار المقترح لهذا المشروع هو التثبيت الجديد، وليس الترقية.
+
+ملفات SQL المحضرة، ولم ينفّذ أي منها خارجياً:
+- supabase/staff_roles.sql: تثبيت جديد، داخل transaction، يفشل إذا كان الجدول موجوداً.
+- supabase/upgrade_staff_roles.sql: مسار ترقية منفصل للجدول الأصلي فقط، مع رفض سياسات غير متوقعة؛ غير مطلوب للمشروع الحالي وفق الفحص.
+- supabase/verify_security.sql: استعلامات قراءة للتحقق من الأعمدة وRLS والمنح والدوال بعد الموافقة؛ ليست اختباراً سلوكياً للسياسات.
+- supabase/tests/rls_acceptance.sql: اختبار PostgreSQL سلوكي محضّر للحسابات الثلاثة؛ لم يُنفّذ. يستخدم transaction وROLLBACK ومحاكاة دور قاعدة البيانات داخل الجلسة؛ لا يستبدل اختبار Auth/JWT الفعلي عبر HTTP.
+
+جدول staff_roles المقترح:
+user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE
+full_name TEXT NOT NULL مع طول 1–120 بعد trim
+role TEXT NOT NULL مع CHECK للأدوار protocol/sales/admin فقط
+is_active BOOLEAN NOT NULL DEFAULT true
+created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+updated_at TIMESTAMPTZ NOT NULL DEFAULT now() مع trigger عند التحديث
+
+البريد وكلمة المرور يبقيان في Supabase Auth. لا توجد حاجة لنسخة ثانية من البريد في جدول الأدوار، ولا يوجد أي عمود لكلمات المرور.
+
+مصفوفة الوصول المقترحة لحسابات التطبيق:
+SELECT: السجل الشخصي الفعّال فقط، ضمن جلسة فعلية غير Anonymous ولم تنتهِ.
+INSERT: ممنوع.
+UPDATE: ممنوع، بما فيه تغيير الدور أو منح Admin.
+DELETE: ممنوع.
+anon/PUBLIC: لا امتيازات على الجدول.
+authenticated: SELECT فقط.
+service_role: SELECT/INSERT/UPDATE/DELETE للإجراءات الإدارية الموثوقة خارج واجهة الموظفين.
+
+السياسات خمس: سياسة SELECT للسجل الشخصي، وحدّ SELECT إضافي AS RESTRICTIVE، وثلاث سياسات منع AS RESTRICTIVE للكتابة. فُعّل ENABLE وFORCE RLS في SQL المقترح. توجد منح SELECT صريحة لأن تغييرات Supabase الحديثة لا تضمن تعريض الجداول الجديدة تلقائياً للـData API.
+
+تبرير SECURITY DEFINER:
+الدالة abaad_private.has_live_session() ضرورية لقراءة auth.sessions المحمي، بهدف رفض JWT مسروق/منسوخ بعد سحب جلسته حتى قبل انتهاء JWT. تعيد Boolean عن جلسة المستدعي فقط، بلا معاملات لمعرفات مستخدمين آخرين، وتتأكد من auth.uid() وsession_id وexp وis_anonymous وnot_after. مخطط abaad_private غير مخصص للتعريض للـData API، وsearch_path فارغ، والأسماء مؤهلة بالكامل. سُحب EXECUTE من PUBLIC وanon ومنح للمستخدم authenticated فقط، مع USAGE على المخطط. لا توجد دالة لتعديل الأدوار أو رفع الصلاحية.
+الدالة الثانية الخاصة بـupdated_at هي SECURITY INVOKER، وليست SECURITY DEFINER.
+
+تمت قراءة وصف auth.sessions في المشروع، والتحقق من وجود id وuser_id وnot_after قبل إعداد هذا الفحص. لم تُقرأ صفوف جلسات أو بيانات موظفين.
+
+C. Authentication — تسجيل الدخول والجلسات
+
+Email + Password عبر Server Actions، وSupabase SSR Cookies. لا يوجد Browser Supabase Client حالياً؛ لذلك يحتفظ الخادم وحده بالرموز ويستخدم HttpOnly. Cookies هي SameSite=Lax وSecure في الإنتاج، لذا HTTPS مطلوب للإنتاج. لا تضف عميل Supabase داخل المتصفح لاحقاً دون مراجعة هذه البنية.
+
+لا تسجيل عام داخل واجهة المنتج ولا دخول وهمي. بعد نجاح كلمة المرور، يجب وجود سجل موظف فعّال بنفس الدور المختار. كل صفحة تعيد getUser وقراءة الدور من قاعدة البيانات، ولا تعتمد على الدور وقت تسجيل الدخول وحده.
+
+تسجيل الخروج يستهدف جلسة الجهاز الحالي فقط scope=local؛ الأجهزة الأخرى لا تُسجّل خروجاً تلقائياً. عند فشل سحب الجلسة البعيدة تُمسح Cookies المحلية ويظهر تنبيه؛ قد يبقى الرمز المسروق/جلسة الجهاز البعيدة صالحاً إلى حين السحب/الانتهاء، ولا يدّعي التطبيق عكس ذلك.
+
+JWT منتهٍ مع refresh token صالح قد يُجدّد بصورة صحيحة؛ انتهاء access token وحده لا يعني انتهاء الجلسة. انتهاء/سحب الجلسة نفسها يجب أن يؤدي إلى العودة للبوابة. سياسات المهلة الخاملة في Supabase تُطبّق وفق سلوك Auth عند التجديد؛ ليست هذه المرحلة بديلاً عن تلك الإعدادات.
+
+توجد رسائل عربية عامة تمنع كشف تفاصيل الحساب أو أخطاء الخدمة الداخلية، ومعالجة 429. يعتمد حد محاولات Auth على إعدادات Supabase؛ لا توجد آلية موزعة جديدة لحظر المحاولات داخل التطبيق.
+
+D. Role-Based Access — فصل الأقسام
+
+protocol -> /protocol فقط.
+sales -> /sales فقط.
+admin -> /admin فقط في المرحلة الحالية.
+
+لا يمنح اختيار البطاقة أي دور. مصفوفة المنع بين كل دور والقسمين الآخرين اختُبرت محلياً. الإدارة ستتمكن من إدارة الأقسام في وظائف لاحقة بعد بناء عمليات خادم وسياسات خاصة؛ لم تُمنح الآن كتابة عامة على staff_roles.
+
+أي Server Action حساسة مستقبلية يجب أن تستدعي requireRole داخل العملية نفسها، وتحتاج الجداول المستقبلية إلى RLS خاص بها. حماية الصفحة لا تحمي تلقائياً جداول أو APIs لم تُنشأ بعد.
+
+E. Supabase Connection — نتائج القراءة الفعلية
+
+- .env.local موجود، مستثنى من Git، وغير متعقّب.
+- URL يطابق مشروع ABAAD-EXHIBIT ومرجعه pwlwelxnrrignapdsyiw، وليس المشروع الآخر في الحساب.
+- نوع المفتاح Publishable. لم تُطبع قيمته أو تُنسخ إلى التقرير أو Git.
+- Auth settings استجابت HTTP 200 بالمفتاح الموجود: email provider مفعّل، وتأكيد البريد مطلوب.
+- disable_signup=false: التسجيل العام مفعّل حالياً، وهذه نقطة تمنع اعتماد الإعداد المطلوب قبل إغلاقه.
+- واجهة الإعدادات العامة لم تعطِ علامة مستقلة حاسمة لحالة Anonymous؛ يلزم التحقق من تعطيله في Dashboard. التطبيق وRLS المقترحة يرفضان هويات Anonymous على أي حال.
+- أداة Security Advisors لم تُظهر إنذارات وقت القراءة. هذا ليس إثباتاً لسلامة سياسات لم تُنشأ بعد.
+- لم يُنفّذ SQL خارجي، ولم تُعدّل إعدادات Auth، ولم تُنشأ حسابات، ولم يُختَر أو يُنشأ مشروع جديد.
+
+F. Testing — الاختبارات المنفذة وحدودها
+
+منفذ وناجح:
+- npm run typecheck
+- npm run lint
+- npm run build، مع تحميل .env.local ونجاح الخطوط والمسارات.
+- npm run test:auth: عدد 46/46 اختباراً محلياً ناجحاً.
+- فحص HTTP لنسخة الإنتاج: /admin و/protocol و/sales رفضت الطلب دون جلسة، مع Cache-Control: no-store.
+- فحص HTTP لCookie مصطنعة تالفة: لم تفتح /admin.
+- فحص المتصفح: المسارات الثلاثة أعادت إلى /?notice=session برسالة عربية، مع بقاء هوية ABAAD EXHIBIT والواجهة الحالية.
+- مقارنة بصمات الملفات: إعدادات الهوية والمعرض وHeader وFooter والألوان والخطوط وpage.tsx بقيت كما كانت. التغييرات في النموذج تخص دورة الجلسة فقط، وفي البوابة إضافة رسالة سحب غير مؤكد.
+
+الاختبارات المحلية تغطي: الأدوار الثلاثة الصحيحة باستخدام بدائل محلية، حالات المنع الست، الحساب المعطل، الدور المجهول، غياب الموظف، تجاهل user_metadata، الجلسة المنتهية/غير الصالحة، أخطاء الشبكة، تنظيف Cookies، فشل السحب، كتابة Cookies في Actions، تجديدها في Proxy، المفاتيح الخاطئة وتثبيت المشروع.
+
+غير منفذ ويجب ألا يُعد ناجحاً بعد:
+1–3: تسجيل الدخول الحقيقي لكل دور.
+4–5: رفض دخول القسم الخاطئ بحساب حقيقي وكلمة مرور صحيحة.
+7: انتهاء وتجديد جلسة Supabase حقيقية.
+8: Logout الحقيقي ثم زر الرجوع/فتح الصفحة وإعادة استخدام JWT المسحوب.
+9–11: محاولات تصعيد الدور وقراءة/تعديل موظف آخر واختبارات RLS على PostgreSQL/Data API.
+12: تعطيل سجل موظف فعلي ثم إعادة الطلب بدور/جلسة قائمة.
+
+ملف اختبار RLS محضّر فقط. لم يتوفر runtime PostgreSQL محلي، ولم تُجرَ اختبارات قاعدة بيانات خارجية دون الموافقة المطلوبة. الاختبارات الافتراضية ليست بديلاً عنها.
+
+G. Pending Actions — حزمة الإجراءات المقترحة للموافقة
+
+الهدف الوحيد: مشروع ABAAD-EXHIBIT، مرجعه pwlwelxnrrignapdsyiw.
+1. الموافقة على تنفيذ staff_roles.sql: جدول واحد، مخطط داخلي، دالتان إحداهما مقيدة SECURITY DEFINER، trigger واحد، خمس سياسات، والمنح المحددة أعلاه. لا حذف بيانات ولا جداول أعمال إضافية. يراجع المخطط ثانية قبل التنفيذ إذا تغيّر منذ هذا الفحص.
+2. تعطيل Allow new users to sign up في Supabase Auth، والإبقاء على Email + Password وتأكيد البريد. التحقق من Anonymous Sign-ins وتعطيله.
+3. إبقاء abaad_private خارج مخططات Data API المكشوفة.
+4. إنشاء الحسابات الثلاثة فقط بعد موافقة منفصلة وتحديد عناوين بريدها: Protocol Staff وSales Staff وSystem Administrator. لا حساب Admin افتراضي ولا كلمات مرور ثابتة.
+5. الطريقة الآمنة: مالك المشروع يدخل Supabase Dashboard > Authentication > Users، ويدعو المستخدم أو ينشئه بإجراء إداري موثوق. كل موظف يستخدم كلمة مرور منفردة عبر قناة آمنة؛ لا تُرسل كلمات المرور في هذا التقرير ولا تحفظ في Git أو SQL.
+6. بعد تأكيد البريد، يأخذ المسؤول UUID الحقيقي من Auth، ويضيف سجل staff_roles بالاسم والدور الصحيح عبر SQL Editor/إجراء إداري موثوق. حساب Admin الأول يُنشأ بالطريقة نفسها، دون التسجيل العام. لا تضع service_role في متغير عام.
+7. بعد التهيئة: تشغيل verify_security.sql، وSecurity Advisors، واختبار SQL المحضّر على حسابات اختبار مخصصة ضمن transaction، ثم مصفوفة Auth وData API والمتصفح بحسابات حقيقية.
+8. إعادة توليد Database Types من المشروع الفعلي ومقارنتها بالعقد المحلي، ثم إعادة الفحوصات قبل أي اعتماد للإنتاج.
+
+التغيير الخارجي متوقف بسبب شرط الموافقة الذي وضعته في طلبك، وليس بسبب رفض تقني أو مراجعة آلية. كل العمل المحلي الممكن اكتمل قبل طلب هذه الموافقة.
+
+H. Readiness Status — تصنيف الجاهزية
+
+مرتبط بـ Supabase ويحتاج تهيئة الجداول والإعدادات واختبارات فعلية.
+ليس جاهزاً للإنتاج حالياً. اتصال Auth مؤكد، لكن SQL لم يُطبّق والتسجيل العام لا يزال مفعلاً واختبارات الحسابات وRLS الحقيقية لم تُنفّذ.
+
+الملفات الجديدة:
+src/types/database.ts
+src/lib/auth/session.ts
+src/components/access/SessionRevalidation.tsx
+supabase/upgrade_staff_roles.sql
+supabase/verify_security.sql
+supabase/tests/rls_acceptance.sql
+docs/security-phase02.txt
+
+الملفات المعدّلة:
+src/types/auth.ts
+src/lib/auth/actions.ts
+src/lib/auth/authorization.ts
+src/lib/supabase/config.ts
+src/lib/supabase/server.ts
+src/proxy.ts
+src/components/access/LoginForm.tsx
+src/components/access/AccessPortal.tsx
+src/components/sections/LogoutButton.tsx
+src/components/sections/SectionPlaceholder.tsx
+supabase/staff_roles.sql
+.env.example
+tests/auth.test.mjs
+README.md
+.env.local (مرجع المشروع فقط؛ مستثنى من Git ولا تُسلّم محتوياته)
+
+مراجع رسمية تمت مراجعتها:
+https://supabase.com/changelog
+https://supabase.com/docs/guides/auth/server-side/creating-a-client
+https://supabase.com/docs/guides/auth/server-side/advanced-guide
+https://supabase.com/docs/guides/auth/sessions
+https://supabase.com/docs/guides/database/postgres/row-level-security
+https://supabase.com/docs/guides/auth/general-configuration
+https://supabase.com/docs/guides/auth/auth-anonymous
+
+تشغيل المشروع محلياً:
+cd C:\HOA-SYSTEM\gallery-org
+npm run dev
+
+المعاينة الحالية لنسخة الإنتاج المحلية:
+http://127.0.0.1:3100/

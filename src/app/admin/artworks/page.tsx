@@ -1,0 +1,1 @@
+import {Suspense} from "react";import AdminArtworksSection from "@/components/admin/artworks/AdminArtworksSection";import AccessLoading from "@/components/access/AccessLoading";export default function Page(){return <Suspense fallback={<AccessLoading/>}><AdminArtworksSection/></Suspense>;}

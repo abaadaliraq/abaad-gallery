@@ -1,0 +1,139 @@
+ABAAD EXHIBIT — Phase 05 / تقرير لوحة الإدارة
+التاريخ: 27 أكتوبر 2026 — توقيت بغداد
+المشروع: C:\HOA-SYSTEM\gallery-org
+Supabase الوحيد: pwlwelxnrrignapdsyiw
+
+النتيجة وحدود الجاهزية
+اكتمل التنفيذ المحلي للوحة الإدارة فوق المشروع الحالي. لم يُنشأ مشروع جديد ولم تُبنَ واجهتا التشريفات أو المبيعات من الصفر.
+لم أطبّق admin.sql على Supabase، ولم أعدّل بيانات الضيوف أو الحضور أو المبيعات أو الأدوار الفعلية أو إعدادات المصادقة، ولم أُنشئ حسابات تجريبية.
+اختبارات الواجهة والكتابة استخدمت PostgreSQL محلياً معزولاً (PGlite) وموظفين وضيوفاً مصطنعين. لا تمثل جلسة Admin حقيقية في Supabase.
+لم يُجرَ اختبار تسجيل دخول بحساب Admin حقيقي على واجهة الإنتاج؛ لا تُعتبر وظائف الإدارة مفعّلة ومتحققاً منها فعلياً قبل اعتماد SQL والتحقق بذلك الحساب.
+
+1. الواجهة والوظائف المكتملة محلياً
+- Layout إدارة مستقل RTL، وSidebar يمين بعرض 208px وقابلة للطي إلى 72px. يظل اسم المدير وتسجيل الخروج متاحين. قائمة الهاتف نافذة جانبية تفتح بزر وتغلق عند التنقل، مع ضبط التركيز وتمرير الخلفية.
+- /admin: مؤشرات التشريفات الأربعة، والمبيعات الأربعة، والموظفين، وآخر العمليات. لا رسوم بيانية ولا أرقام ثابتة في كود المنتج.
+- تُقرأ مؤشرات التشريفات والمبيعات من RPC الحالية وجداول Supabase تحت صلاحية Admin وRLS. دليل الموظفين وأعدادهم ينتظر توفر RPC الجديدة المعتمدة.
+- يتم التفريق بين صفر مؤكد، واستعلام فاشل، ووظيفة بانتظار SQL. الخطأ أو غياب الوظيفة يعرض رسالة وشرطة «—» بدلاً من صفر مضلل.
+- /admin/guests: جدول إداري بصور مصغرة واسم ومنصب وتصنيف وأولوية ووصول ومراجعة وإجراءات. بحث بالاسم والمنصب والجهة، وفلاتر التصنيف والأولوية والحضور والمراجعة.
+- «بانتظار المراجعة» يعرض عدداً دقيقاً مستقلاً عن صفحة النتائج. فلتر المراجعة يشمل جميع الصفحات المحملة، وليس أول 24 سجلاً فقط.
+- إضافة الضيف وتعديله يعيدان استخدام RPC الموجودة. الإضافة تستخدم protocol_merge_import لسجل واحد داخل قفل الاستيراد الحالي، وبهوية مصدر فارغة؛ بذلك لا تكرر سجلاً مستورداً ولا تتبنى أو تحدث هوية CSV بالخطأ. التكرار يعرض رفضاً واضحاً.
+- التعديل يستخدم protocol_save_guest الحالية. لا يقبل حقول الوصول من المدخلات، ولا يغير معرف الدعوة. تبقى علامة مراجعة قائمة محفوظة عند تعديل البيانات بدلاً من رفعها من نموذج التعديل.
+- اختيار المعرض يأتي من Supabase؛ إذا كان واحداً يُحدد تلقائياً وتظهر هويته داخل النموذج. لا معرفات معارض ثابتة داخل Components.
+- المراجعة تعرض البيانات الحالية وسبب المراجعة ومصدرها. فتح السجل لا يعتمد البيانات. الاعتماد يتطلب إقراراً صريحاً ثم حفظاً مؤكداً، ويظل معطلاً حتى توفر RPC المعتمدة.
+- /admin/staff: جدول الاسم والبريد والدور وحالة الوصول إلى التطبيق والمعارض وتاريخ سجل الموظف. البحث والفلترة والنموذج جاهزة مع التعطيل الواضح عند غياب SQL.
+- إضافة موظف جديد غير مفعّلة؛ لم يُضف Auth Admin secret أو Service Role Key. البريد للقراءة فقط، والتفعيل المقصود هو staff_roles.is_active، ولا يغيّر إعدادات Supabase Auth أو كلمات المرور.
+- /admin/activity: أحداث الوصول والتراجع، وحالات الأعمال الفعلية من الجداول الحالية، مع فلاتر القسم والنوع والتاريخ والموظف. وقت العرض هو created_at للحدث، وليس وقت تحديث الصفحة. التاريخ وفق توقيت بغداد.
+- /admin/settings: الاسم والجهة والموقع والهوية من Config الحالية للقراءة فقط؛ حالة المعرض من Supabase حين تتيح السياسات قراءتها. لا زر حفظ ولا مصدر إعدادات جديد منافس.
+- /admin/artworks: ملخص الفنانين وعدد الأعمال وحالتها للقراءة فقط. لا أعمال أو أسعار أو صور مضافة. احتُفظ بمكونات الإدخال السابقة دون توسيعها.
+- /admin/artworks/preview: عرض إداري محمي يعيد استخدام معرض المبيعات للقراءة فقط؛ لا حجز أو بيع أو تعديل عبر هذا العرض، ولا تحويل دور Admin إلى Sales.
+
+2. ما يحتاج SQL للموافقة
+الملف: supabase/admin.sql، ونسخة التسليم phase05-admin-review.sql.
+SHA256: e785c69628a00e90e7acffbef101e7d073c095dc1204e4f10c3a016cd7d44e46
+الملف يعرّف ثلاث RPC عامة بأغلفة SECURITY INVOKER، ومنطقاً محدوداً داخل abaad_private:
+- admin_staff_directory: قراءة دليل الموظفين والبريد من Auth إلى مدير نشط ذي جلسة حية، مع الأعداد والمعارض وقدرات الواجهة.
+- admin_update_staff: تعديل الاسم والدور وتفعيل الوصول وربط المعارض. يتحقق من النسخة، ويقفل التعديلات الإدارية تسلسلياً، ويرفض تغيير المستخدم لدوره أو تعطيل نفسه، ويحمي آخر Admin نشط.
+- admin_approve_guest: اعتماد صريح مع فحص توقيتي تعديل الضيف والدعوة تحت قفل الصفوف. يغيّر review_required فقط مع updated_at؛ لا يغيّر الأولوية أو المصدر أو بيانات الوصول.
+لا ينشئ الملف جداول أو حسابات أو أحداثاً، ولا يغيّر سياسات RLS أو صلاحيات الكتابة المباشرة إلى staff_roles. نشر تعريفاته لا يعدل صفوفاً حالية؛ التعديلات المستقبلية تتم فقط عند استدعاء إداري صريح.
+وظائف SECURITY DEFINER داخل مخطط خاص، مع search_path فارغ وصلاحيات EXECUTE مقيدة وفحص الهوية والدور والجلسة داخل قاعدة البيانات. لا اعتماد على user_metadata ولا مفاتيح سرية جديدة.
+
+3. حالة Supabase التي تمت معاينتها
+آخر فحص metadata أعاد الجداول الحالية فقط، مع RLS مفعّل:
+- staff_roles: 3.
+- protocol_exhibitions: 1، protocol_categories: 6.
+- protocol_exhibition_staff: 1.
+- protocol_guests: 34، protocol_invitations: 34.
+- protocol_attendance_events: 0.
+- artwork_artists: 2، exhibition_artists: 2.
+- sales_exhibition_staff: 1.
+- artworks: 0، exhibition_artworks: 0، artwork_status_history: 0.
+لم تُنفذ كتابات خارجية في هذه المرحلة. فحص البصمات أكد بقاء 12 ملفاً من المصادقة وSupabase Clients والـConfig والـProxy وSQL السابقة دون تغيير.
+وجود RLS في metadata لا يكفي وحده لإعلان نجاح دخول Admin أو إجراءاته؛ لذلك بقي اختبار الحساب الحقيقي معلناً كخطوة متبقية.
+
+4. حماية لوحة الإدارة
+كل صفحات /admin والصفحات الفرعية تتحقق من Admin النشط والجلسة على الخادم. لا يُعتمد على Layout المخزن بين التنقلات وحده؛ الصفحات وواجهات API وServer Actions تتحقق أيضاً.
+عمليات API تحفظ تجديد كوكيز الجلسة وفق النمط الحالي، ثم تعيد فحص الدور. الاستجابات private/no-store.
+تُرفض Protocol وSales قبل قراءة بيانات الإدارة. الصلاحيات الجديدة للموظفين محصورة في RPC بعد الاعتماد؛ لا محاولة للكتابة المباشرة إلى staff_roles أو فتحه للمستخدمين.
+فحص HTTP دون جلسة على localhost:3000 أكد حراسة الصفحات الست وثلاث واجهات API، مع إعادة التوجيه إلى تسجيل الدخول. قد يكون HTTP 200 للقشرة المتدفقة في Next.js؛ جرى التحقق من تحويل الجلسة داخل الاستجابة ولم يُعدّ 200 وحده نجاح وصول.
+
+5. الاختبارات ونتائجها
+الإجمالي: 204 اختبارات ناجحة:
+- Auth: 46.
+- Protocol: 40 + PostgreSQL/RLS: 25.
+- Sales: 20 + PostgreSQL/RLS: 24.
+- Admin: 32 + PostgreSQL/RLS: 17.
+TypeScript Check: ناجح. ESLint: ناجح. Production Build: ناجح.
+اختُبرت الجلسات المفقودة والمنتهية والحساب المعطل، ومنع وصول Protocol/Sales، والتكرار، وحفظ الوصول، ورفض المراجعة القديمة، وعدم تغيير الأولوية أثناء الاعتماد، وربط الموظفين وإلغاء الربط، ومنع تغيير صلاحيات المستخدم لنفسه.
+اختبارات المتصفح محلياً: نظرة عامة، جدول الضيوف، فلتر المراجعات 11 سجلاً بما يشمل الصفحة الثانية، اعتماد سجل مصطنع بعد الإقرار فقط، تعديل اسم موظف مصطنع، تعطيل دور المدير الحالي وحالته في النموذج، وحالة انتظار SQL دون محاكاة نجاح.
+اختُبرت إضافة ضيف مصطنع وظهوره فوراً بحالة «لم يصل»، ثم رفض محاولة إضافته مرة ثانية. لم يُختبر ذلك على ضيف حقيقي.
+فُحص Desktop وMobile بعرض 390×844، والتنقل والقائمة الجانبية وتمرير الجدول داخل حدوده.
+PGlite يستخدم اتصالاً واحداً؛ حماية القفل صُممت في SQL لكن لم يُجرَ اختبار تزامن اتصالين مستقلين على Supabase الفعلي.
+
+6. حدود السجل والأداء
+سجل العمليات يغطي جداول الحضور وحالات الأعمال الموجودة فقط. تعديل بيانات الضيوف واعتماد المراجعات وتعديل الموظفين لا تسجلها تلك الجداول؛ لم يُنشأ نظام Audit جديد ولم يُدّعَ شمولها.
+يُعرض أحدث 200 حدث لكل قسم؛ يظهر تنبيه لطلب نطاق تاريخ أضيق عند تجاوز ذلك. قائمة إدارة الضيوف تستخدم RPC الحالية حتى 50 صفحة من النتائج المطابقة؛ إذا تجاوزت القائمة ذلك يُطلب تضييق البحث بدلاً من عرض نتائج ناقصة كأنها كاملة.
+هذه الحدود لا تمنع إدارة السجلات الحالية الـ34، وتحد من تحميل بيانات غير لازمة قبل الافتتاح.
+
+7. الملفات الجديدة (40)
+- C:/HOA-SYSTEM/gallery-org/src/app/admin/layout.tsx
+- C:/HOA-SYSTEM/gallery-org/src/app/admin/staff/page.tsx
+- C:/HOA-SYSTEM/gallery-org/src/app/admin/activity/page.tsx
+- C:/HOA-SYSTEM/gallery-org/src/app/admin/settings/page.tsx
+- C:/HOA-SYSTEM/gallery-org/src/app/admin/artworks/preview/page.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/admin/AdminLayout.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/admin/AdminShell.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/admin/AdminSidebar.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/admin/AdminHeader.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/admin/AdminOverview.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/admin/AdminStats.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/admin/AdminStatus.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/admin/RecentActivity.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/admin/AdminActivity.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/admin/AdminSettings.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/admin/guests/GuestManagement.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/admin/guests/GuestTable.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/admin/guests/GuestEditor.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/admin/guests/GuestReview.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/admin/staff/StaffManagement.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/admin/staff/StaffTable.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/admin/staff/StaffEditor.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/admin/artworks/ArtworkSummary.tsx
+- C:/HOA-SYSTEM/gallery-org/src/lib/admin/access.ts
+- C:/HOA-SYSTEM/gallery-org/src/lib/admin/actions.ts
+- C:/HOA-SYSTEM/gallery-org/src/lib/admin/domain.ts
+- C:/HOA-SYSTEM/gallery-org/src/lib/admin/queries.ts
+- C:/HOA-SYSTEM/gallery-org/src/lib/admin/useAdminData.ts
+- C:/HOA-SYSTEM/gallery-org/src/types/admin.ts
+- C:/HOA-SYSTEM/gallery-org/src/types/admin-database.ts
+- C:/HOA-SYSTEM/gallery-org/src/app/api/admin/overview/route.ts
+- C:/HOA-SYSTEM/gallery-org/src/app/api/admin/guest-management/route.ts
+- C:/HOA-SYSTEM/gallery-org/src/app/api/admin/staff/route.ts
+- C:/HOA-SYSTEM/gallery-org/src/app/api/admin/activity/route.ts
+- C:/HOA-SYSTEM/gallery-org/src/app/api/admin/settings/route.ts
+- C:/HOA-SYSTEM/gallery-org/src/app/api/admin/artwork-summary/route.ts
+- C:/HOA-SYSTEM/gallery-org/supabase/admin.sql
+- C:/HOA-SYSTEM/gallery-org/tests/admin.test.mjs
+- C:/HOA-SYSTEM/gallery-org/tests/admin.database.mjs
+- C:/HOA-SYSTEM/gallery-org/docs/admin-phase05.txt
+
+8. الملفات المعدلة (12)
+- C:/HOA-SYSTEM/gallery-org/src/components/sections/AdminSection.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/sections/LogoutButton.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/protocol/AdminGuestsSection.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/protocol/GuestEditor.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/protocol/GuestPhoto.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/admin/artworks/AdminArtworksSection.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/sales/SalesDashboard.tsx
+- C:/HOA-SYSTEM/gallery-org/src/components/sales/ArtworkDetails.tsx
+- C:/HOA-SYSTEM/gallery-org/src/lib/protocol/actions.ts
+- C:/HOA-SYSTEM/gallery-org/src/types/database.ts
+- C:/HOA-SYSTEM/gallery-org/tests/helpers/load-ts.mjs
+- C:/HOA-SYSTEM/gallery-org/package.json
+لم تُعدّل ملفات Authentication أو staff_roles.sql أو Config أو SQL التشريفات والمبيعات السابقة. تعديل LogoutButton خاص بعرضه المضغوط فقط، دون تغيير منطق تسجيل الخروج.
+
+9. المتبقي للتشغيل الكامل
+- مراجعة ملف SQL المرفق واعتماد تطبيقه على pwlwelxnrrignapdsyiw حصراً، وفق تعليماتك «لا تنفذ SQL على قاعدة البيانات قبل موافقتي».
+- بعد الاعتماد: تطبيق التعريفات والتحقق من الصلاحيات والحالة الأمنية، دون تغيير بيانات الموظفين أو الضيوف كجزء من النشر.
+- تسجيل دخول بحساب Admin حقيقي والتحقق من القراءة والإحصائيات والجداول وحالات التعطيل/التمكين. تبقى اختبارات الكتابة والتزامن على بيانات معزولة، ولا تستخدم قائمة الضيوف الحقيقية للاختبارات.
+- إنشاء حسابات الموظفين إدارياً مؤجل، وإدخال الأعمال والصور والأسعار مؤجل كما طلبت.
+مرجع مراجعة أمان الدوال: https://supabase.com/docs/guides/database/functions#security-definer-vs-invoker

@@ -1,0 +1,454 @@
+{
+  "project_id": "pwlwelxnrrignapdsyiw",
+  "exhibition_slug": "naima-baghdad-2026",
+  "artist_slug": "wissam-radi",
+  "rows": [
+    {
+      "order": 1,
+      "artwork_code": "WR-001",
+      "title_ar": "ضيوف",
+      "width_cm": 75,
+      "height_cm": 175,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652403/dhuyuf_oeypwa.png",
+      "catalog_note": null
+    },
+    {
+      "order": 2,
+      "artwork_code": "WR-002",
+      "title_ar": "بنات نعيمة",
+      "width_cm": 65,
+      "height_cm": 175,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652361/banat-naima_j1azry.png",
+      "catalog_note": null
+    },
+    {
+      "order": 3,
+      "artwork_code": "WR-003",
+      "title_ar": "بنت المختار",
+      "width_cm": 85,
+      "height_cm": 215,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652375/bint-al-mukhtar_wtts23.png",
+      "catalog_note": null
+    },
+    {
+      "order": 4,
+      "artwork_code": "WR-004",
+      "title_ar": "الحب والبراءة",
+      "width_cm": 65,
+      "height_cm": 175,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652319/love-innocence_vwhwsa.png",
+      "catalog_note": null
+    },
+    {
+      "order": 5,
+      "artwork_code": "WR-005",
+      "title_ar": "المخطوبة",
+      "width_cm": 76,
+      "height_cm": 176,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652338/al-makhtouba_udikkn.png",
+      "catalog_note": null
+    },
+    {
+      "order": 6,
+      "artwork_code": "WR-006",
+      "title_ar": "نعيمة قادمة سأنتظرها",
+      "width_cm": 75,
+      "height_cm": 195,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652436/naima-coming_fehdun.png",
+      "catalog_note": null
+    },
+    {
+      "order": 7,
+      "artwork_code": "WR-007",
+      "title_ar": "بنت نعيمة في الإسطبل",
+      "width_cm": 75,
+      "height_cm": 176,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652368/naima-stable_uaedrj.png",
+      "catalog_note": null
+    },
+    {
+      "order": 8,
+      "artwork_code": "WR-008",
+      "title_ar": "بستان نعيمة",
+      "width_cm": 68,
+      "height_cm": 226,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652390/bustan-naima_arzx5x.png",
+      "catalog_note": null
+    },
+    {
+      "order": 9,
+      "artwork_code": "WR-009",
+      "title_ar": "بنت نعيمة الخياطة",
+      "width_cm": 75,
+      "height_cm": 196,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652382/bint-naima_rhnp8b.png",
+      "catalog_note": "ربط الصورة مبدئي بحسب اسم الملف؛ يلزم تأكيد أنها بنت نعيمة الخياطة."
+    },
+    {
+      "order": 10,
+      "artwork_code": "WR-010",
+      "title_ar": "نعيمة",
+      "width_cm": 65,
+      "height_cm": 258,
+      "collection_kind": "painting",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "order": 11,
+      "artwork_code": "WR-011",
+      "title_ar": "نعيمة في الحي",
+      "width_cm": 85,
+      "height_cm": 215,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652353/naima-neighborhood_ge4kjy.png",
+      "catalog_note": null
+    },
+    {
+      "order": 12,
+      "artwork_code": "WR-012",
+      "title_ar": "نعيمة تخبز",
+      "width_cm": 75,
+      "height_cm": 176,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652338/naima-baking_mwlxao.png",
+      "catalog_note": null
+    },
+    {
+      "order": 13,
+      "artwork_code": "WR-013",
+      "title_ar": "العيد",
+      "width_cm": 96,
+      "height_cm": 197,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652411/eid_hlgi9h.png",
+      "catalog_note": null
+    },
+    {
+      "order": 14,
+      "artwork_code": "WR-014",
+      "title_ar": "بائعة الورد",
+      "width_cm": 85,
+      "height_cm": 215,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652419/flower-seller_jbf7gk.png",
+      "catalog_note": null
+    },
+    {
+      "order": 15,
+      "artwork_code": "WR-015",
+      "title_ar": "المحطة",
+      "width_cm": 90,
+      "height_cm": 165,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652345/al-mahatta_nh3ybq.png",
+      "catalog_note": null
+    },
+    {
+      "order": 16,
+      "artwork_code": "WR-016",
+      "title_ar": "الجبايش",
+      "width_cm": 76,
+      "height_cm": 167,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652397/chibayish_n3hsvd.png",
+      "catalog_note": null
+    },
+    {
+      "order": 17,
+      "artwork_code": "WR-017",
+      "title_ar": "غزال نعيمة",
+      "width_cm": 96,
+      "height_cm": 196,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652433/naima-gazelle_owuppr.png",
+      "catalog_note": null
+    },
+    {
+      "order": 18,
+      "artwork_code": "WR-018",
+      "title_ar": "رحلة",
+      "width_cm": 77,
+      "height_cm": 176,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652425/journey_ceb1qe.png",
+      "catalog_note": null
+    },
+    {
+      "order": 19,
+      "artwork_code": "WR-019",
+      "title_ar": "بيتنا بالمجر",
+      "width_cm": 85,
+      "height_cm": 216,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652335/our-home-al-majar_gotr8a.png",
+      "catalog_note": null
+    },
+    {
+      "order": 20,
+      "artwork_code": "WR-020",
+      "title_ar": "انتظار",
+      "width_cm": 75,
+      "height_cm": 195,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652436/waiting_soqbrc.png",
+      "catalog_note": null
+    },
+    {
+      "order": 21,
+      "artwork_code": "WR-021",
+      "title_ar": "بالباب نعيمة",
+      "width_cm": 65,
+      "height_cm": 176,
+      "collection_kind": "painting",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1792652434/naima-at-door_xakvhl.png",
+      "catalog_note": null
+    },
+    {
+      "order": 22,
+      "artwork_code": "WR-022",
+      "title_ar": "بنات الجيران",
+      "width_cm": 217,
+      "height_cm": 167,
+      "collection_kind": "painting",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "order": 23,
+      "artwork_code": "WR-023",
+      "title_ar": "نعيمة على بساط الريح",
+      "width_cm": 215,
+      "height_cm": 175,
+      "collection_kind": "painting",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "order": 24,
+      "artwork_code": "WR-024",
+      "title_ar": "حفلة عرس",
+      "width_cm": 185,
+      "height_cm": 65,
+      "collection_kind": "painting",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-001",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-002",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-003",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-004",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-005",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-006",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-007",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-008",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-009",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-010",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-011",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-012",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-013",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-014",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-015",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-016",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-017",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-018",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-019",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-020",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-021",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-022",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    },
+    {
+      "artwork_code": "MIN-023",
+      "title_ar": null,
+      "width_cm": null,
+      "height_cm": null,
+      "collection_kind": "miniature",
+      "photo_url": null,
+      "catalog_note": null
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+import type {Artwork,SalesMode} from "@/types/sales";import ArtworkCard from "./ArtworkCard";
+export default function ArtworkGrid({artworks,mode,onOpen}:{artworks:Artwork[];mode:SalesMode;onOpen:(row:Artwork)=>void}){return <section aria-label="قائمة الأعمال الفنية" className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 md:grid-cols-3 xl:grid-cols-4">{artworks.map(row=><ArtworkCard key={row.id} artwork={row} mode={mode} onOpen={()=>onOpen(row)}/>)}</section>;}

@@ -1,0 +1,70 @@
+import type {GuestPriority} from "@/lib/protocol/priority";
+export type Guest = {
+  id: string;
+  guest_id: string;
+  full_name_ar: string;
+  full_name_en: string | null;
+  official_title: string;
+  organization: string;
+  photo_public_id: string | null;
+  photo_url: string | null;
+  photo_gravity: string;
+  priority_level: GuestPriority;
+  review_required: boolean;
+  review_note: string | null;
+  source_key: string | null;
+  source_record_key: string | null;
+  source_description: string | null;
+  category_id: string | null;
+  category_label: string | null;
+  seating_location: string | null;
+  internal_notes: string | null;
+  checked_in_at: string | null;
+  checked_in_by: string | null;
+  display_order: number;
+};
+export type GuestCategory = { id: string; label: string };
+export type GuestSnapshot = {
+  exhibition_id: string;
+  observed_at: string;
+  total: number;
+  checked_in: number;
+  pending: number;
+  total_matches: number;
+  page: number;
+  page_size: number;
+  categories: GuestCategory[];
+  guests: Guest[];
+};
+export type GuestInput = {
+  full_name_ar: string;
+  full_name_en: string;
+  official_title: string;
+  organization: string;
+  category_id: string;
+  category: string;
+  photo_public_id: string;
+  photo_url: string;
+  photo_gravity: string;
+  priority_level: GuestPriority;
+  review_required: boolean;
+  review_note: string;
+  source_key: string;
+  source_record_key: string;
+  source_description: string;
+  seating_location: string;
+  internal_notes: string;
+  display_order: number;
+};
+export type ProtocolMode = "protocol" | "admin";
+export type ArrivalResult =
+  { ok: true; already: boolean } | { ok: false; error: string };
+export type ImportReport = {
+  succeeded: number;
+  updated?: number;
+  failed: number;
+  duplicated: number;
+  errors: { row: number; message: string }[];
+};
+
+export type GuestImportPlan = { new_count: number; existing_count: number; update_count: number; unchanged_count: number; conflict_count: number; rows: {row:number;action:"new"|"update"|"unchanged"|"conflict";id?:string;message?:string}[] };

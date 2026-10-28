@@ -1,0 +1,2 @@
+import type {ArtworkStatus} from "@/types/sales";import {statusLabels} from "@/lib/sales/domain";
+export default function ArtworkStatusBadge({status}:{status:ArtworkStatus}){const color={available:'border-[#687963]/40 text-[#50604D]',reserved:'border-accent/40 text-accent',sold:'border-line text-muted',not_for_sale:'border-line text-foreground'}[status];return <span className={'inline-flex rounded border px-2 py-1 text-[11px] '+color}>{statusLabels[status]}</span>;}
