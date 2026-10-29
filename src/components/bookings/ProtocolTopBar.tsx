@@ -42,7 +42,7 @@ export default function ProtocolTopBar({ staff, tab, onSelectTab, unread, notifi
           onClick={action.onClick}
           className={"relative flex min-h-11 min-w-11 flex-col items-center justify-center gap-1 rounded border px-1 py-1.5 text-[10px] font-normal leading-none sm:flex-row sm:gap-2 sm:px-4 sm:text-sm " + (action.active ? "border-line bg-surface text-foreground" : "border-transparent text-muted hover:bg-surface")}>
           <Icon name={action.key}/>
-          <span className="sm:hidden">{action.label}</span><span className="hidden sm:inline">{action.desktop}</span>
+          <span className="hidden sm:inline">{action.desktop}</span>
           {action.key === "bell" && unread > 0 && <span aria-label={`${unread} إشعار غير مقروء`} className="absolute -top-0.5 right-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 text-[9px] text-surface">{unread > 99 ? "99+" : unread}</span>}
         </button>)}
       </nav>

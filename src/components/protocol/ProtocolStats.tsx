@@ -30,10 +30,10 @@ export default function ProtocolStats({
               {item.english}
             </span>
           </dt>
-          <dd className="mt-auto pt-1 text-xl font-medium tabular-nums sm:text-3xl">
+          <dd lang="en" dir="ltr" className="mt-auto pt-1 text-right text-xl font-medium tabular-nums sm:text-3xl">
             {item.value === undefined
               ? "—"
-              : new Intl.NumberFormat("ar-IQ").format(item.value)}
+              : new Intl.NumberFormat("en-US").format(item.value)}
           </dd>
         </div>
       ))}
