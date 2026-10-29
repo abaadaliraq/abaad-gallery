@@ -9,7 +9,7 @@ import ArtworkImage from "./ArtworkImage";
 import ArtworkStatusBadge from "./ArtworkStatusBadge";
 import ArtworkStatusActions from "./ArtworkStatusActions";
 const stamp = (value: string) =>
-  new Intl.DateTimeFormat("ar-IQ", {
+  new Intl.DateTimeFormat("ar-IQ-u-nu-latn", {
     timeZone: "Asia/Baghdad",
     dateStyle: "short",
     timeStyle: "short",

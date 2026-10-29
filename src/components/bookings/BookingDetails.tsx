@@ -308,7 +308,7 @@ export default function BookingDetails({
                   · {e.guest_delta} · {e.actor_name || e.actor_id}
                 </p>
                 <time>
-                  {new Date(e.created_at).toLocaleString("ar-IQ", {
+                  {new Date(e.created_at).toLocaleString("ar-IQ-u-nu-latn", {
                     timeZone: "Asia/Baghdad",
                   })}
                 </time>

@@ -50,7 +50,7 @@ export function initials(name: string) {
   );
 }
 export function arrivalTime(value: string) {
-  return new Intl.DateTimeFormat("ar-IQ", {
+  return new Intl.DateTimeFormat("ar-IQ-u-nu-latn", {
     timeZone: "Asia/Baghdad",
     hour: "2-digit",
     minute: "2-digit",

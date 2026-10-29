@@ -422,7 +422,7 @@ export default function BookingDashboard({
               )}
               <p className="text-xs text-muted">
                 آخر تحقق:{" "}
-                {new Date(h.data.observed_at).toLocaleTimeString("ar-IQ", {
+                {new Date(h.data.observed_at).toLocaleTimeString("ar-IQ-u-nu-latn", {
                   timeZone: "Asia/Baghdad",
                 })}
                 . قراءة QR لا تسجّل الوصول تلقائياً.

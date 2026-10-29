@@ -65,7 +65,7 @@ export default function GuestTable({
                   <span className="mt-1 block text-xs font-normal text-muted">
                     مستبعد ·{" "}
                     {row.archived_at
-                      ? new Date(row.archived_at).toLocaleDateString("ar-IQ", {
+                      ? new Date(row.archived_at).toLocaleDateString("ar-IQ-u-nu-latn", {
                           timeZone: "Asia/Baghdad",
                         })
                       : "—"}{" "}

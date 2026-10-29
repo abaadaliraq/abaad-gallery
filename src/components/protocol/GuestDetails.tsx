@@ -79,7 +79,7 @@ export default function GuestDetails({
           <dd>
             {guest.checked_in_at
               ? "حضر ✓ · " +
-                new Intl.DateTimeFormat("ar-IQ", {
+                new Intl.DateTimeFormat("ar-IQ-u-nu-latn", {
                   timeZone: "Asia/Baghdad",
                   dateStyle: "short",
                   timeStyle: "short",

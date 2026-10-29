@@ -8,7 +8,7 @@ export const configuredArtists=[{slug:"wissam-radi",name_ar:"وسام راضي",
 export const isStatus=(value:unknown):value is ArtworkStatus=>artworkStatuses.some(s=>s===value);
 export function canTransition(status:ArtworkStatus,target:ArtworkStatus,mode:"sales"|"admin"){return mode==="admin"?status!==target:(target==="reserved"&&status==="available")||(target==="sold"&&(status==="available"||status==="reserved"));}
 export function artworkMatches(row:Pick<Artwork,"title_ar"|"title_en"|"artwork_code"|"artist_name_ar"|"artist_name_en">,query:string){return normalizeSearch([row.title_ar,row.title_en,row.artwork_code,row.artist_name_ar,row.artist_name_en].join(" ")).includes(normalizeSearch(query));}
-export function priceText(price:string|null,currency:string|null){return price===null?"السعر غير محدد":new Intl.NumberFormat("ar-IQ",{maximumFractionDigits:2}).format(Number(price))+" "+(currency||"");}
+export function priceText(price:string|null,currency:string|null){return price===null?"السعر غير محدد":new Intl.NumberFormat("en-US",{maximumFractionDigits:2}).format(Number(price))+" "+(currency||"");}
 export function dimensions(row:{width_cm:string|null;height_cm:string|null;depth_cm:string|null}){return row.width_cm&&row.height_cm?[row.width_cm,row.height_cm,row.depth_cm].filter(Boolean).join(" × ")+" سم":null;}
 export function validateArtwork(input:unknown,cloudName="dyqdfbaln"):{value?:ArtworkInput;errors:string[]}{
  const errors:string[]=[];if(!input||typeof input!=="object"||Array.isArray(input))return {errors:["بيانات العمل غير صالحة."]};const raw=input as Record<string,unknown>;

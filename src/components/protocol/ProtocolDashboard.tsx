@@ -110,7 +110,7 @@ export default function ProtocolDashboard({
               <span>
                 آخر تحقق:{" "}
                 <time dateTime={snapshot.observed_at} className="tabular-nums">
-                  {new Intl.DateTimeFormat("ar-IQ", {
+                  {new Intl.DateTimeFormat("ar-IQ-u-nu-latn", {
                     timeZone: "Asia/Baghdad",
                     hour: "2-digit",
                     minute: "2-digit",
