@@ -17,6 +17,7 @@ type Send = (body: Record<string, unknown>) => Promise<unknown>;
 export default function BookingDetails({
   disabled = false,
   fullScreen = false,
+  scanNote,
   booking: b,
   slots,
   admin,
@@ -26,6 +27,7 @@ export default function BookingDetails({
 }: {
   disabled?: boolean;
   fullScreen?: boolean;
+  scanNote?: string;
   booking: ExhibitionBooking;
   slots: BookingSlot[];
   admin: boolean;
@@ -141,11 +143,8 @@ export default function BookingDetails({
         </p>
         <p>الحالة: {b.status === "confirmed" ? "مؤكد" : "ملغى"}</p>
         {b.notes && <p>{b.notes}</p>}
-        {differentDate && (
-          <p className="text-error">
-            تاريخ الحجز مختلف عن اليوم؛ يحتاج الدخول إلى إجراء إداري مسبب.
-          </p>
-        )}
+        {scanNote && <p role="status" className="rounded border border-line bg-surface p-3 text-muted">{scanNote}</p>}
+        {differentDate && <p className="text-sm text-muted">تسجيل الوصول خارج تاريخ الحجز يتطلب الإجراء الإداري المعتمد.</p>}
         {b.status === "confirmed" && (
           <>
             <label className="block">

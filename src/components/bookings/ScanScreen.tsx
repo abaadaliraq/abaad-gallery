@@ -13,7 +13,7 @@ export function scanResultTitle(result: ScanResult) {
 export default function ScanScreen({ camera, result, onRead, onClose, onRetry, onMatched }: {
   camera: boolean; result: ScanResult | "pending" | null;
   onRead: (raw: string) => void; onClose: () => void; onRetry: () => void;
-  onMatched: (booking: ExhibitionBooking) => void;
+  onMatched: (booking: ExhibitionBooking, note?: string) => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const close = useRef(onClose);
@@ -29,7 +29,7 @@ export default function ScanScreen({ camera, result, onRead, onClose, onRetry, o
   useEffect(() => {
     if (!result || result === "pending") return;
     const timer = setTimeout(() => {
-      if (result.kind === "success") onMatched(result.booking);
+      if (result.kind === "success") onMatched(result.booking, result.note);
       else setSettled(result);
     }, 650);
     return () => clearTimeout(timer);
@@ -43,6 +43,7 @@ export default function ScanScreen({ camera, result, onRead, onClose, onRetry, o
           {feedback.kind === "success" ? "✓" : feedback.kind === "connection" ? "!" : "×"}
         </span>
         <h2 role={feedback.kind === "success" ? "status" : "alert"} className="text-xl font-normal">{scanResultTitle(feedback)}</h2>
+        {feedback.kind === "success" && feedback.note && <p className="mt-3 max-w-sm text-sm leading-7 text-muted">{feedback.note}</p>}
         {details && feedback.kind !== "success" && <>
           {feedback.reason !== "format" && feedback.reason !== "unknown" && <p className="mt-3 max-w-sm text-sm leading-7 text-muted">{feedback.message}</p>}
           <div className="mt-8 flex flex-wrap justify-center gap-3">

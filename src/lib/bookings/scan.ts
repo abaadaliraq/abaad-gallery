@@ -1,7 +1,7 @@
 import type { ExhibitionBooking, BookingSnapshot } from "@/types/bookings";
 export type ScanResult =
-  | { kind: "success"; message: string; booking: ExhibitionBooking }
-  | { kind: "rejected" | "connection"; message: string; reason?: "format" | "unknown" | "cancelled" | "used" | "date" | "access" };
+  | { kind: "success"; message: string; booking: ExhibitionBooking; note?: string }
+  | { kind: "rejected" | "connection"; message: string; reason?: "format" | "unknown" | "cancelled" | "used" | "access" };
 export async function verifyBookingCode(raw: string, endpoint: string, signal: AbortSignal, request: typeof fetch = fetch): Promise<ScanResult> {
   const match = /^ABAAD-BOOKING:([a-f0-9]{64})$/.exec(raw);
   if (!match) return { kind: "rejected", reason: "format", message: "هذا الرمز لا يعود لحجز معرض صالح." };
@@ -26,9 +26,12 @@ export async function verifyBookingCode(raw: string, endpoint: string, signal: A
     const verifiedAt = new Date(snapshot.observed_at);
     if (!Number.isFinite(verifiedAt.getTime())) throw Error("unconfirmed");
     const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Baghdad", year: "numeric", month: "2-digit", day: "2-digit" }).format(verifiedAt);
-    if (booking.visit_date !== today)
-      return { kind: "rejected", reason: "date", message: "الحجز ليس لتاريخ اليوم؛ الدخول في تاريخ آخر يحتاج إلى موافقة الإدارة." };
-    return { kind: "success", message: "تم التحقق بنجاح. تسجيل الوصول يتم من تفاصيل الحجز.", booking };
+    const time = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Baghdad", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(verifiedAt);
+    const outsideSchedule = booking.visit_date !== today || time < booking.start_time.slice(0, 5) || time >= booking.end_time.slice(0, 5);
+    const note = outsideSchedule
+      ? `ملاحظة: موعد حجز الضيف ${booking.visit_date} من ${booking.start_time.slice(0, 5)} إلى ${booking.end_time.slice(0, 5)} بتوقيت بغداد. تم قبول التحقق من الباركود رغم اختلاف موعد الزيارة.`
+      : undefined;
+    return { kind: "success", message: "تم التحقق بنجاح. تسجيل الوصول يتم من تفاصيل الحجز.", booking, note };
   } catch (error) {
     if (signal.aborted) throw error;
     return { kind: "connection", message: "تعذر الاتصال للتحقق. أعد المحاولة عند عودة الاتصال؛ لم يُحكم على صلاحية الرمز." };

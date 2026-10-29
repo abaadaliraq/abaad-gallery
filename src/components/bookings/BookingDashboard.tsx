@@ -44,6 +44,7 @@ export default function BookingDashboard({
   const sounds = useProtocolSounds(soundUserId);
   const [scanResult, setScanResult] = useState<ScanResult | "pending" | null>(null);
   const [scanBooking, setScanBooking] = useState<ExhibitionBooking | null>(null);
+  const [scanNote, setScanNote] = useState<string | undefined>();
   const [dismissedNotice, setDismissedNotice] = useState("");
   const scanGate = useRef(new ScanGate());
   const scanRequest = useRef<AbortController | null>(null);
@@ -70,8 +71,8 @@ export default function BookingDashboard({
     scanRequest.current?.abort();
     setCamera(false); setScanResult(null);
   }, []);
-  const matched = useCallback((booking: ExhibitionBooking) => {
-    setScanResult(null); setScanBooking(booking);
+  const matched = useCallback((booking: ExhibitionBooking, note?: string) => {
+    setScanResult(null); setScanBooking(booking); setScanNote(note);
   }, []);
   const booking = h.data?.bookings.find((b) => b.id === selected);
   const { setToken, setQ, setDate, setStatus, setPage } = h;
@@ -177,6 +178,7 @@ export default function BookingDashboard({
       )}
       {(camera || scanResult) && <ScanScreen camera={camera} result={scanResult} onRead={onRead} onClose={closeScan} onRetry={openScan} onMatched={matched} />}
       {scanBooking && <BookingDetails fullScreen
+        scanNote={scanNote}
         booking={currentScannedBooking(scanBooking, h.data?.bookings || [])}
         slots={h.data?.slots || []} admin={admin} disabled={!!h.error}
         send={h.send} onSaved={h.refresh} onClose={() => setScanBooking(null)} />}

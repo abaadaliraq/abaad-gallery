@@ -64,11 +64,24 @@ test("malformed and unknown QR codes are rejected on distinct evidence", async (
   assert.equal((await verifyBookingCode("bad", "/api/protocol/bookings", signal(), () => assert.fail())).kind, "rejected");
   assert.match((await lookup(snapshot([]))).message, /غير معروف/);
 });
-test("cancelled, fully used and wrong-date bookings cannot play success; partial party is allowed", async () => {
+test("cancelled and fully used bookings cannot play success; partial party is allowed", async () => {
   assert.match((await lookup(snapshot([row("x", 1, { status: "cancelled" })]))).message, /ملغى/);
   assert.match((await lookup(snapshot([row("x", 1, { checked_in_guest_count: 3 })]))).message, /سبق تسجيل/);
-  assert.match((await lookup(snapshot([row("x", 1, { visit_date: "2026-11-01" })]))).message, /ليس لتاريخ اليوم/);
   assert.equal((await lookup(snapshot([row("x", 1, { checked_in_guest_count: 1 })]))).kind, "success");
+});
+
+test("valid bookings outside date or time succeed with the booked schedule as an advisory", async () => {
+  for (const observed_at of ["2026-10-30T16:00:00Z", "2026-11-01T16:00:00Z", "2026-10-31T14:59:00Z", "2026-10-31T18:00:00Z"]) {
+    const result = await lookup(snapshot([row()], 10, { observed_at }));
+    assert.equal(result.kind, "success");
+    assert.match(result.note, /2026-10-31.*18:00.*21:00/);
+    assert.equal(result.booking.visit_date, "2026-10-31");
+  }
+  for (const observed_at of ["2026-10-31T15:00:00Z", "2026-10-31T17:59:00Z"]) {
+    const result = await lookup(snapshot([row()], 10, { observed_at }));
+    assert.equal(result.kind, "success");
+    assert.equal(result.note, undefined);
+  }
 });
 test("offline, failed server and malformed response are connection errors, never invalid QR claims", async () => {
   assert.equal((await verifyBookingCode(raw, "/api/protocol/bookings", signal(), async () => { throw Error("offline"); })).kind, "connection");
