@@ -1,3 +1,4 @@
+import mobile from "./guest-mobile.module.css";
 export default function GuestSearch({
   value,
   onChange,
@@ -6,7 +7,7 @@ export default function GuestSearch({
   onChange: (value: string) => void;
 }) {
   return (
-    <div className="relative mb-3">
+    <div className={`relative mb-3 ${mobile.search}`}>
       <label htmlFor="guest-search" className="sr-only">
         البحث عن الضيوف
       </label>
@@ -17,7 +18,7 @@ export default function GuestSearch({
         onChange={(event) => onChange(event.target.value)}
         maxLength={200}
         autoComplete="off"
-        placeholder="ابحث عن ضيف بالاسم أو المنصب..."
+        placeholder="ابحث بالاسم أو المنصب…"
         className="min-h-12 w-full rounded-md border border-line bg-surface px-4 text-base outline-offset-2 transition-colors focus:border-accent"
       />
       {value && (

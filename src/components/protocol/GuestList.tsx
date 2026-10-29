@@ -1,5 +1,6 @@
 import type { Guest, ProtocolMode } from "@/types/protocol";
 import GuestCard from "./GuestCard";
+import mobile from "./guest-mobile.module.css";
 export default function GuestList({
   guests,
   mode,
@@ -18,7 +19,7 @@ export default function GuestList({
       aria-label="قائمة الضيوف"
       aria-busy={disabled}
       className={
-        "grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 " +
+        "grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 " + mobile.list + " " +
         (disabled ? "opacity-60" : "")
       }
     >

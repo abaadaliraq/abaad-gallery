@@ -1,5 +1,6 @@
 import { priorities, priorityLabels } from "@/lib/protocol/priority";
 import type { GuestCategory } from "@/types/protocol";
+import mobile from "./guest-mobile.module.css";
 export default function GuestFilters({
   categories,
   category,
@@ -18,7 +19,7 @@ export default function GuestFilters({
   onAttendance: (value: string) => void;
 }) {
   return (
-    <div className="mb-5 grid grid-cols-2 gap-3 sm:flex sm:items-center">
+    <div className={`mb-5 grid grid-cols-2 gap-3 sm:flex sm:items-center ${mobile.filters}`}>
       <label className="text-xs text-muted">
         التصنيف
         <select
