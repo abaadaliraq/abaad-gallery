@@ -7,7 +7,7 @@ export default function ArtworkFilters({artists,artist,status,onChange}:{artists
     <label className="text-xs text-muted">حالة العمل<select value={status} onChange={event=>onChange({status:event.target.value})} className={style}><option value="all">جميع الأعمال</option>{artworkStatuses.map(value=><option key={value} value={value}>{statusLabels[value]}</option>)}</select></label>
   </>;
   return <>
-    <details className="mb-3 rounded border border-line bg-surface px-3 sm:hidden"><summary className="flex min-h-11 cursor-pointer items-center justify-between text-xs text-muted"><span>تصفية النتائج</span><span>{status==='all'?'جميع الحالات':statusLabels[status as keyof typeof statusLabels]} ⌄</span></summary><div className="grid grid-cols-2 gap-2 pb-3">{controls}</div></details>
+    <label className="sales-mobile-status text-muted sm:hidden"><span className="sr-only">حالة العمل</span><select value={status} onChange={event=>onChange({status:event.target.value})} className="border border-line bg-surface text-foreground"><option value="all">كل الحالات</option>{artworkStatuses.map(value=><option key={value} value={value}>{statusLabels[value]}</option>)}</select></label>
     <div className="mb-5 hidden gap-3 sm:flex">{controls}</div>
   </>;
 }

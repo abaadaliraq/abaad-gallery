@@ -96,6 +96,7 @@ export default function SalesDashboard({
           </div>
         )}
         {snapshot?.artists.find(a=>a.id===filters.artist)?.slug==='wissam-radi' && <div className="mb-3 flex flex-wrap gap-2 sm:mb-5" aria-label="أقسام أعمال وسام راضي">{([['painting','اللوحات'],['miniature','المصغرات']] as const).map(([value,label])=><button key={value} type="button" aria-pressed={filters.collection===value} onClick={()=>filter({collection:value})} className="min-h-11 rounded border border-line bg-surface px-2 text-xs sm:px-4 sm:text-sm">{label} — {snapshot.artists.find(a=>a.id===filters.artist)?.[value==='painting'?'paintings':'miniatures']??'—'} عملاً</button>)}</div>}
+        <div className="sales-mobile-tools">
         <ArtworkSearch value={filters.q} onChange={(q) => filter({ q })} />
         <ArtworkFilters
           artists={snapshot?.artists || []}
@@ -103,6 +104,7 @@ export default function SalesDashboard({
           status={filters.status}
           onChange={filter}
         />
+        </div>
         <div className="mb-3 flex items-center justify-between gap-3 text-xs text-muted">
           <p aria-live="polite">
             {loading

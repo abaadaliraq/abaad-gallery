@@ -5,6 +5,7 @@ import { branding } from "@/config/branding";
 import { exhibition } from "@/config/exhibition";
 import "./globals.css";
 import "@/components/protocol/guest-mobile.css";
+import "@/components/sales/sales-mobile.css";
 
 const arabicFont = Alexandria({
   subsets: ["arabic", "latin"],

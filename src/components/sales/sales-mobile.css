@@ -1,0 +1,24 @@
+@media (max-width: 639px) {
+  .sales-mobile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .sales-mobile-card { min-width: 0; }
+  .sales-mobile-card-open { display: flex; flex-direction: column; align-items: stretch; height: 100%; }
+  .sales-mobile-image { height: auto; aspect-ratio: 1; }
+  .sales-mobile-image img { padding: 6px; }
+  .sales-mobile-card-text { display: flex; flex: 1; flex-direction: column; padding: 9px; width: 100%; overflow-wrap: anywhere; }
+  .sales-mobile-code, .sales-mobile-artist { display: none; }
+  .sales-mobile-title { font-size: 13px; font-weight: 400; line-height: 1.7; }
+  .sales-mobile-dimensions { font-size: 11px; line-height: 1.7; margin-top: 3px; }
+  .sales-mobile-price-row { margin-top: auto; padding-top: 8px; gap: 5px; }
+  .sales-mobile-price { font-size: 12px; line-height: 1.7; }
+  .sales-mobile-price-row > span:last-child { padding: 2px 5px; font-size: 10px; }
+  .sales-mobile-tools { display: grid; grid-template-columns: minmax(0, 1fr) 108px; gap: 8px; align-items: start; margin-bottom: 12px; }
+  .sales-mobile-tools > * { min-width: 0; margin-bottom: 0; }
+  .sales-mobile-search input, .sales-mobile-status select { width: 100%; min-width: 0; min-height: 44px; padding-inline: 9px; font-size: 16px; font-weight: 300; border-radius: 5px; }
+  .sales-mobile-search input::placeholder { font-weight: 300; }
+  .sales-mobile-status select { margin-top: 0; padding-left: 19px; appearance: none; }
+  .sales-mobile-status { position: relative; }
+  .sales-mobile-status::after { content: ""; position: absolute; left: 8px; top: 18px; width: 5px; height: 5px; border-left: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: rotate(-45deg); pointer-events: none; opacity: .65; }
+  .sales-mobile-artists { gap: 8px; }
+  .sales-mobile-artists > button { padding: 8px 10px; }
+  .sales-mobile-artists-name { font-size: 13px; line-height: 1.6; }
+}
