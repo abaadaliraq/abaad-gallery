@@ -10,6 +10,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test:auth": "node --test tests/auth.test.mjs",
     "test:protocol": "node --test tests/protocol.test.mjs",
+    "test:guests:css": "node tests/guest-css-build.mjs",
     "test:protocol:db": "node tests/protocol.database.mjs",
     "test:sales": "node --test tests/sales.test.mjs",
     "test:sales:db": "node tests/sales.database.mjs",

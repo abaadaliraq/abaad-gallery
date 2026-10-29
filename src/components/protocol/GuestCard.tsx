@@ -3,7 +3,7 @@ import type { Guest, ProtocolMode } from "@/types/protocol";
 import { arrivalTime } from "@/lib/protocol/search";
 import GuestPhoto from "./GuestPhoto";
 import GuestCheckIn from "./GuestCheckIn";
-import mobile from "./guest-mobile.module.css";
+import mobile from "./guest-mobile";
 export default function GuestCard({
   guest,
   mode,

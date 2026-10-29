@@ -8,7 +8,7 @@ function authorizedPhotoLoader({ src, width }: ImageLoaderProps) {
 import { memo, useState } from "react";
 import { initials } from "@/lib/protocol/search";
 import type { Guest, ProtocolMode } from "@/types/protocol";
-import mobile from "./guest-mobile.module.css";
+import mobile from "./guest-mobile";
 function GuestPhoto({
   guest,
   mode,

@@ -1,6 +1,6 @@
 import { priorities, priorityLabels } from "@/lib/protocol/priority";
 import type { GuestCategory } from "@/types/protocol";
-import mobile from "./guest-mobile.module.css";
+import mobile from "./guest-mobile";
 export default function GuestFilters({
   categories,
   category,

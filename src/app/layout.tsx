@@ -4,6 +4,7 @@ import { Alexandria, Montserrat } from "next/font/google";
 import { branding } from "@/config/branding";
 import { exhibition } from "@/config/exhibition";
 import "./globals.css";
+import "@/components/protocol/guest-mobile.css";
 
 const arabicFont = Alexandria({
   subsets: ["arabic", "latin"],

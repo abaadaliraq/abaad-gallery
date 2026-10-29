@@ -1,6 +1,6 @@
 import type { Guest, ProtocolMode } from "@/types/protocol";
 import GuestCard from "./GuestCard";
-import mobile from "./guest-mobile.module.css";
+import mobile from "./guest-mobile";
 export default function GuestList({
   guests,
   mode,

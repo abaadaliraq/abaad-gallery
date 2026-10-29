@@ -1,4 +1,4 @@
-import mobile from "./guest-mobile.module.css";
+import mobile from "./guest-mobile";
 export default function GuestSearch({
   value,
   onChange,
