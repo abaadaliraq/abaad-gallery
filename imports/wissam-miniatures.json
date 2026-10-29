@@ -1,0 +1,84 @@
+{
+  "project_id": "pwlwelxnrrignapdsyiw",
+  "note": "User requested arbitrary fixed prices, no titles or dimensions. Unnumbered source assigned MIN-013.",
+  "rows": [
+    {
+      "artwork_code": "MIN-001",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1793272804/mini_1_l6i5ib.jpg",
+      "price": 1250000,
+      "currency": "IQD"
+    },
+    {
+      "artwork_code": "MIN-002",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1793272804/mini_2_yehwzl.jpg",
+      "price": 1350000,
+      "currency": "IQD"
+    },
+    {
+      "artwork_code": "MIN-003",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1793272805/mini_3_tixcds.jpg",
+      "price": 1400000,
+      "currency": "IQD"
+    },
+    {
+      "artwork_code": "MIN-004",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1793272805/mini_4_rzkumq.jpg",
+      "price": 1150000,
+      "currency": "IQD"
+    },
+    {
+      "artwork_code": "MIN-005",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1793272805/mini_5_vw00bx.jpg",
+      "price": 900000,
+      "currency": "IQD"
+    },
+    {
+      "artwork_code": "MIN-006",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1793272805/mini_6_lecno9.jpg",
+      "price": 850000,
+      "currency": "IQD"
+    },
+    {
+      "artwork_code": "MIN-007",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1793272806/mini_7_np4rup.jpg",
+      "price": 1250000,
+      "currency": "IQD"
+    },
+    {
+      "artwork_code": "MIN-008",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1793272814/mini_8_t7umhh.jpg",
+      "price": 1350000,
+      "currency": "IQD"
+    },
+    {
+      "artwork_code": "MIN-009",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1793272815/mini_9_xd2fhq.jpg",
+      "price": 600000,
+      "currency": "IQD"
+    },
+    {
+      "artwork_code": "MIN-010",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1793272813/mini_10_gzsxib.jpg",
+      "price": 900000,
+      "currency": "IQD"
+    },
+    {
+      "artwork_code": "MIN-011",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1793272814/mini_11_lw2hxj.jpg",
+      "price": 1500000,
+      "currency": "IQD"
+    },
+    {
+      "artwork_code": "MIN-012",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1793272822/mini_12_ukul1z.jpg",
+      "price": 1450000,
+      "currency": "IQD"
+    },
+    {
+      "artwork_code": "MIN-013",
+      "photo_url": "https://res.cloudinary.com/dyqdfbaln/image/upload/v1793272822/mini-_ivvpql.jpg",
+      "price": 1150000,
+      "currency": "IQD"
+    }
+  ]
+}

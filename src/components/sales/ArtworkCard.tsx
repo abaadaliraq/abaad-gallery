@@ -3,10 +3,13 @@ import {dimensions,priceText} from "@/lib/sales/domain";
 import ArtworkImage from "./ArtworkImage";
 import ArtworkStatusBadge from "./ArtworkStatusBadge";
 export default function ArtworkCard({artwork,mode,onOpen}:{artwork:Artwork;mode:SalesMode;onOpen:()=>void}) {
-  if (artwork.collection_kind === "miniature") return <article className="rounded border border-line bg-surface">
-    <button type="button" onClick={onOpen} aria-label={'تفاصيل المصغرة '+artwork.artwork_code} className="flex min-h-14 w-full items-center justify-between gap-3 px-3 py-2 text-right">
-      <span dir="ltr" className="font-latin text-[10px] text-muted">{artwork.artwork_code}</span>
-      <span className="text-sm tabular-nums">{priceText(artwork.price,artwork.currency)}</span>
+  if (artwork.collection_kind === "miniature") return <article className="sales-mobile-card overflow-hidden rounded border border-line bg-surface">
+    <button type="button" onClick={onOpen} aria-label={'تفاصيل المصغرة '+artwork.artwork_code} className="flex h-full w-full flex-col text-right">
+      {(artwork.photo_local_path || artwork.photo_public_id || artwork.photo_url) && <ArtworkImage key={artwork.photo_local_path || artwork.photo_public_id || artwork.photo_url} artwork={artwork} mode={mode}/>}
+      <span className="flex min-h-14 w-full flex-col gap-1 p-2.5 sm:p-4">
+        <span dir="ltr" className="font-latin text-xs text-muted">{artwork.artwork_code}</span>
+        <span className="text-xs tabular-nums sm:text-sm">{priceText(artwork.price,artwork.currency)}</span>
+      </span>
     </button>
   </article>;
   return <article className="sales-mobile-card overflow-hidden rounded border border-line bg-surface">

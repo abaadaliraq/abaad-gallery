@@ -74,7 +74,7 @@ export default function ArtworkDetails({
   return (
     <SalesDialog title={miniature ? "تفاصيل المصغرة" : "تفاصيل العمل الفني"} onClose={onClose} wide={!miniature}>
       <div className={miniature ? "grid gap-4" : "grid items-start gap-6 lg:grid-cols-[1.2fr_1fr]"}>
-        {!miniature && <ArtworkImage
+        {(!miniature || artwork.photo_local_path || artwork.photo_public_id || artwork.photo_url) && <ArtworkImage
           key={artwork.photo_local_path || artwork.photo_public_id || artwork.photo_url}
           artwork={artwork}
           mode={mode}
