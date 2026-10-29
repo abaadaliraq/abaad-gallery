@@ -21,8 +21,11 @@ export class SoundController {
     private storage: Pick<Storage, "getItem" | "setItem">,
     private key: string,
     private changed: (status: SoundStatus) => void,
+    private alwaysOn = false,
   ) {
-    try { this.wanted = storage.getItem(key) !== "off"; } catch { /* Private mode can deny storage. */ }
+    if (!alwaysOn) {
+      try { this.wanted = storage.getItem(key) !== "off"; } catch { /* Private mode can deny storage. */ }
+    }
   }
   get status(): SoundStatus {
     return !this.wanted ? "muted" : this.unavailable ? "unavailable" : this.context?.state === "running" ? "ready" : "locked";
@@ -32,7 +35,7 @@ export class SoundController {
     if (this.closed) return;
     const revision = ++this.revision;
     this.wanted = true;
-    try { this.storage.setItem(this.key, "on"); } catch {}
+    if (!this.alwaysOn) { try { this.storage.setItem(this.key, "on"); } catch {} }
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
       if (!this.context || this.context.state === "closed") {
@@ -43,14 +46,14 @@ export class SoundController {
         };
       }
       this.unavailable = false;
-      // Must be called directly from a user gesture, before any asynchronous work.
+      // Call resume synchronously: mount may be allowed, otherwise a real gesture retries.
       const resumed = this.context.resume();
       await Promise.race([resumed, new Promise<void>(resolve => { timer = setTimeout(resolve, 1500); })]);
     } catch { this.unavailable = !this.context; }
     finally { clearTimeout(timer); if (revision === this.revision) this.publish(); }
   }
   unlock() {
-    // Called from the scan/notification button gesture. Never override a stored mute.
+    // Normal mode respects mute; the Protocol workspace opts into always-on mode.
     if (!this.wanted || this.closed) return Promise.resolve();
     if (this.status === "ready") return Promise.resolve();
     return this.enable();
@@ -60,6 +63,7 @@ export class SoundController {
     if (this.status === "ready") this.play("scan_success", "sound-test:" + ++this.previews);
   }
   mute() {
+    if (this.alwaysOn) return;
     ++this.revision;
     this.wanted = false;
     try { this.storage.setItem(this.key, "off"); } catch {}

@@ -11,7 +11,6 @@ import GuestDetails from "@/components/protocol/GuestDetails";
 import type { Guest } from "@/types/protocol";
 import { useProtocolSounds } from "@/lib/audio/useProtocolSounds";
 import { verifyBookingCode, ScanGate, currentScannedBooking, type ScanResult } from "@/lib/bookings/scan";
-import SoundControl from "./SoundControl";
 export type BookingToolbarActions = {
   unread: number;
   notificationsOpen: boolean;
@@ -150,7 +149,6 @@ export default function BookingDashboard({
         </div>
       </div>
       )}
-      {soundUserId && <SoundControl status={sounds.status} enable={sounds.enable} mute={sounds.mute} testSound={sounds.testSound} />}
       {h.noticeError && <p role="status" className="mb-3 text-xs text-muted">{h.noticeError}</p>}
       {soundUserId && latestNotice && dismissedNotice !== latestNotice.id && <aside role="status" aria-live="polite" className="fixed bottom-4 right-3 left-3 z-30 mx-auto max-w-sm rounded border border-line bg-surface p-3 text-xs shadow-lg">
         <div className="flex items-center justify-between gap-2"><p>حجز جديد · {latestNotice.full_name}</p><button type="button" aria-label="إغلاق إشعار الحجز" onClick={() => setDismissedNotice(latestNotice.id)} className="min-h-11 min-w-11">×</button></div>

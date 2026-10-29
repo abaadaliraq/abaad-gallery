@@ -1,12 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { load } from "./helpers/load-ts.mjs";
-import * as jsx from "react/jsx-runtime";
-import { renderToStaticMarkup } from "react-dom/server";
 const { NewBookingTracker } = load("src/lib/bookings/notifications.ts");
 const { verifyBookingCode, ScanGate } = load("src/lib/bookings/scan.ts");
 const { SoundController } = load("src/lib/audio/controller.ts");
-const { default: SoundControl } = load("src/components/bookings/SoundControl.tsx", { "react/jsx-runtime": jsx });
+const { startAutomaticSound } = load("src/lib/audio/automatic.ts");
 const signal = () => new AbortController().signal;
 const at = n => `2026-10-31T12:00:${String(n).padStart(2, "0")}.000Z`;
 const row = (id = "b1", created = 1, extra = {}) => ({ id, booking_reference: id, full_name: "ضيف معزول", visit_date: "2026-10-31", start_time: "18:00", end_time: "21:00", guest_count: 3, checked_in_guest_count: 0, status: "confirmed", created_at: at(created), updated_at: at(created), ...extra });
@@ -100,7 +98,7 @@ test("repeat frames, concurrent scans and rapid retry emit one verification; int
   gate.leave(); assert.equal(gate.enter(raw), false); time = 2501;
   assert.equal(gate.enter(raw), true);
 });
-function audioFixture({ stored = null, blocked = false, unsupported = false } = {}) {
+function audioFixture({ stored = null, blocked = false, unsupported = false, alwaysOn = false } = {}) {
   const nodes = [], values = new Map([["key", stored]]), states = [];
   let resumes = 0;
   const ctx = { state: "suspended", currentTime: 0, destination: {}, onstatechange: null,
@@ -109,7 +107,7 @@ function audioFixture({ stored = null, blocked = false, unsupported = false } = 
     createOscillator: () => { const node = { frequency: {}, connect() {}, disconnect() {}, start(at) { this.startAt = at; }, stop(at) { this.stopAt = at; } }; nodes.push(node); return node; },
     createGain: () => ({ gain: { setValueAtTime() {}, linearRampToValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect() {}, disconnect() {} }),
   };
-  const controller = new SoundController(() => { if (unsupported) throw Error("unsupported"); return ctx; }, { getItem: k => values.get(k), setItem: (k,v) => values.set(k,v) }, "key", s => states.push(s));
+  const controller = new SoundController(() => { if (unsupported) throw Error("unsupported"); return ctx; }, { getItem: k => values.get(k), setItem: (k,v) => values.set(k,v) }, "key", s => states.push(s), alwaysOn);
   return { controller, nodes, ctx, values, states, resumes: () => resumes };
 }
 test("no autoplay; muted/locked events are not queued for later replay and IDs deduplicate", async () => {
@@ -145,13 +143,35 @@ test("three distinct tones use one non-overlapping bounded timeline", async () =
   for (let n = 0; n < 20; n++) f.controller.play("new_booking", "burst" + n);
   assert.ok(f.nodes.length < 30); f.controller.dispose();
 });
-test("sound controls reflect actual capability, retain clear touch labels and handle unsupported audio", async () => {
+test("unsupported audio remains unavailable without claiming playback", async () => {
   const f = audioFixture({ unsupported: true }); await f.controller.enable(); assert.equal(f.controller.status, "unavailable"); f.controller.dispose();
-  for (const status of ["locked", "muted", "unavailable"]) {
-    const html = renderToStaticMarkup(SoundControl({ status, enable() {}, mute() {} }));
-    assert.doesNotMatch(html, /الصوت مفعّل/); assert.match(html, /تفعيل التنبيهات الصوتية/);
-  }
-  assert.match(renderToStaticMarkup(SoundControl({ status: "ready", enable() {}, mute() {} })), /كتم الصوت/);
+});
+
+test("automatic activation tries on mount and real interactions, then removes every listener", () => {
+  const target = new EventTarget(), page = Object.assign(new EventTarget(), { visibilityState: "visible" });
+  let calls = 0;
+  const stop = startAutomaticSound({ unlock: () => { calls++; return Promise.resolve(); } }, target, page);
+  assert.equal(calls, 1);
+  for (const event of ["pointerdown", "touchend", "keydown", "click", "focus", "pageshow"]) target.dispatchEvent(new Event(event));
+  assert.equal(calls, 7);
+  page.visibilityState = "hidden"; page.dispatchEvent(new Event("visibilitychange")); assert.equal(calls, 7);
+  page.visibilityState = "visible"; page.dispatchEvent(new Event("visibilitychange")); assert.equal(calls, 8);
+  stop(); target.dispatchEvent(new Event("click")); page.dispatchEvent(new Event("visibilitychange")); assert.equal(calls, 8);
+});
+
+test("always-on workspace ignores saved mute, stays locked if blocked and activates on a real gesture", async () => {
+  const f = audioFixture({ stored: "off", blocked: true, alwaysOn: true });
+  const target = new EventTarget(), page = Object.assign(new EventTarget(), { visibilityState: "visible" });
+  const stop = startAutomaticSound(f.controller, target, page);
+  await Promise.resolve(); await Promise.resolve();
+  assert.equal(f.controller.status, "locked"); assert.equal(f.nodes.length, 0);
+  f.ctx.resume = async () => { f.ctx.state = "running"; f.ctx.onstatechange?.(); };
+  target.dispatchEvent(new Event("touchend")); await Promise.resolve();
+  assert.equal(f.controller.status, "ready"); assert.equal(f.nodes.length, 0);
+  f.controller.mute(); assert.equal(f.controller.status, "ready");
+  assert.equal(f.controller.play("new_booking", "actual-new-booking"), true);
+  assert.equal(f.controller.play("new_booking", "actual-new-booking"), false);
+  stop(); f.controller.dispose();
 });
 test("microsecond creation immediately after baseline is not truncated away", async () => {
   const tracker = new NewBookingTracker();
