@@ -210,7 +210,7 @@ export default function BookingDashboard({
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
           <label className="col-span-2">
             <span className="text-xs text-muted">
-              البحث الموحد — ضيف افتتاح أو حجز معرض
+              {admin ? "البحث الموحد — ضيف افتتاح أو حجز معرض" : "البحث في الحجوزات"}
             </span>
             <input
               type="search"
@@ -291,7 +291,7 @@ export default function BookingDashboard({
         ) : (
           h.data && (
             <>
-              {h.q && (
+              {admin && h.q && (
                 <section className="space-y-3">
                   <h3 className="text-sm">
                     ضيوف الافتتاح — سجلات مستقلة (
@@ -382,7 +382,7 @@ export default function BookingDashboard({
               </div>
               {Math.max(
                 h.data.total_matches,
-                h.data.opening?.total_matches || 0,
+                admin ? h.data.opening?.total_matches || 0 : 0,
               ) > 20 && (
                 <nav
                   className="flex items-center justify-center gap-4"
@@ -407,7 +407,7 @@ export default function BookingDashboard({
                       h.page * 20 >=
                         Math.max(
                           h.data.total_matches,
-                          h.data.opening?.total_matches || 0,
+                          admin ? h.data.opening?.total_matches || 0 : 0,
                         )
                     }
                     onClick={() => {
@@ -441,7 +441,7 @@ export default function BookingDashboard({
             onSaved={h.refresh}
           />
         )}{" "}
-        {guest && (
+      {admin && guest && (
           <GuestDetails
             guest={guest}
             mode={admin ? "admin" : "protocol"}

@@ -50,7 +50,7 @@ export async function bookingGet(request: Request, mode: ProtocolMode) {
   const snapshot = data as BookingSnapshot;
   if (!snapshot || !Array.isArray(snapshot.bookings))
     return reply({ error: "تعذر التحقق من البيانات." }, 503);
-  if (search) {
+  if (search && mode === "admin") {
     const opening = await client.rpc("protocol_snapshot", {
       p_slug: protocolSlug(),
       p_query: search,

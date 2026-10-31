@@ -4,11 +4,10 @@ import type { StaffProfile } from "@/types/auth";
 import ProtocolHeader from "@/components/protocol/ProtocolHeader";
 import LogoutButton from "@/components/sections/LogoutButton";
 import type { BookingToolbarActions } from "./BookingDashboard";
-export type ProtocolTab = "opening" | "bookings";
-type IconName = "guests" | "bookings" | "bell" | "scan";
+export type ProtocolTab = "bookings";
+type IconName = "bookings" | "bell" | "scan";
 function Icon({ name }: { name: IconName }) {
   const paths: Record<IconName, ReactNode> = {
-    guests: <><circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 4a3 3 0 0 1 0 6m2 4a5 5 0 0 1 3 4v3"/></>,
     bookings: <><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18m-13 5h3m3 0h2"/></>,
     bell: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></>,
     scan: <><path d="M3 8V3h5m8 0h5v5m0 8v5h-5M8 21H3v-5M3 12h18"/><path d="M8 8h2m4 0h2M8 16h2m4 0h2"/></>,
@@ -21,8 +20,7 @@ export default function ProtocolTopBar({ staff, tab, onSelectTab, unread, notifi
   onSelectTab: (tab: ProtocolTab) => void;
 }) {
   const actions = [
-    { key: "guests", label: "الضيوف", desktop: "ضيوف الافتتاح", active: tab === "opening", panel: "opening-panel", onClick: () => onSelectTab("opening") },
-    { key: "bookings", label: "الحجوزات", desktop: "الحجوزات والبحث الموحد", active: tab === "bookings", panel: "bookings-panel", onClick: () => onSelectTab("bookings") },
+    { key: "bookings", label: "الحجوزات", desktop: "الحجوزات", active: tab === "bookings", panel: "bookings-panel", onClick: () => onSelectTab("bookings") },
     { key: "bell", label: "إشعارات", desktop: "الإشعارات", active: notificationsOpen, onClick: onNotifications },
     { key: "scan", label: "مسح", desktop: "مسح QR", active: scannerOpen, onClick: onScan },
   ] as const;
