@@ -39,6 +39,12 @@ function load(name, overrides = {}) {
 }
 const { LiveStore, signature } = load("src/lib/live/store.ts");
 const key = "/api/protocol?q=guest";
+
+test('Admin overview and activity refresh when booking arrival revisions change',async()=>{
+ let calls=0;const store=new LiveStore('admin',()=>{},async()=>{calls++;return Response.json({events:[],stats:{arrived:37}});});
+ for(const url of ['/api/admin/overview','/api/admin/activity']){store.subscribe(url,'overview',()=>{});await store.load(url,'overview');}
+ assert.equal(calls,2);await store.invalidate(['bookings']);assert.equal(calls,4);store.dispose();
+});
 test("unchanged probes never re-fetch full data every five seconds", async () => {
   let full = 0,
     probe = 0,

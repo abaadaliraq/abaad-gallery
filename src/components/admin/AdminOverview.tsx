@@ -4,6 +4,7 @@ import { useAdminData } from "@/lib/admin/useAdminData";
 import AdminStats from "./AdminStats";
 import RecentActivity from "./RecentActivity";
 import AdminStatus from "./AdminStatus";
+import Link from 'next/link';
 export default function AdminOverview() {
   const { data, error, loading, updating, slow, limited, refresh } =
     useAdminData<OverviewData>("/api/admin/overview");
@@ -29,7 +30,13 @@ export default function AdminOverview() {
         onRetry={() => void refresh()}
       />
       <AdminStats
-        title="التشريفات"
+        title="حجوزات وزوار المعرض"
+        state={data?.bookings||null}
+        items={[["إجمالي الحجوزات","total"],["الزوار المتوقعون","expected"],["الذين وصلوا","arrived"],["واصلون من الباب","walk_in"]]}
+      />
+      <Link href="/admin/bookings" className="mb-5 inline-flex min-h-11 items-center text-sm underline">عرض أسماء زوار المعرض وحجوزات الباب ←</Link>
+      <AdminStats
+        title="ضيوف الافتتاح"
         state={data?.protocol || null}
         items={[
           ["إجمالي الضيوف", "total"],

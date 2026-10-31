@@ -20,6 +20,7 @@ import { isUuid } from "@/lib/protocol/search";
 import { isPriority } from "@/lib/protocol/priority";
 import { adminClient } from "./access";
 import { baghdadDateRange, filterActivities, saleEventKind } from "./domain";
+import {bookingLedger,bookingSummary,bookingActivities,type BookingLedger} from './booking-ledger';
 type Client = SupabaseClient<Database>;
 const missing = (code?: string) =>
   !!code && ["PGRST202", "42P01", "42883"].includes(code);
@@ -153,6 +154,7 @@ export async function activities(
   directory: DataState<StaffDirectory>,
   own: { user_id: string; full_name: string },
   limit = 200,
+  ledger?: Promise<BookingLedger>,
 ): Promise<ActivityResult> {
   const department = params.get("department") || "all",
     kind = params.get("kind") || "all",
@@ -168,6 +170,7 @@ export async function activities(
       "cancel_reservation",
       "correct_status",
       "artwork_added",
+      "walk_in","booking_check_in","booking_correction","booking_cancel","booking_reschedule",
     ].includes(kind) ||
     (actor && !isUuid(actor))
   )
@@ -287,14 +290,16 @@ export async function activities(
       reason: e.reason,
     })),
   ];
-  const filtered = filterActivities(events, {
+  const bookingLog=department==='sales'||exhibition.slug!==protocolSlug()?{events:[],errors:[],truncated:false}:await bookingActivities(client,ledger||bookingLedger(client),{department,kind,actor,from:range.from,to:range.to});
+  errors.push(...bookingLog.errors);
+  const filtered = filterActivities([...events,...bookingLog.events], {
     department,
     kind,
     actor,
     from: range.from,
     to: range.to,
   });
-  return { events: filtered, total: filtered.length, truncated, errors };
+  return { events: filtered, total: filtered.length, truncated:truncated||bookingLog.truncated, errors };
 }
 async function legacyGuestManagement(
   client: Client,
@@ -448,13 +453,15 @@ export async function adminResponse(
         await activities(client, selected, params, directory, staff),
         { headers: privateHeaders },
       );
-    const [protocol, sales, activity] = await Promise.all([
+    const ledger=selected.slug===protocolSlug()?bookingLedger(client):Promise.reject(Error('تقارير الحجوزات مخصصة لمعرض نعيمة وذاكرة بغداد.'));
+    const [protocol, sales, activity,bookings] = await Promise.all([
       protocolSummary(client, selected),
       salesSummary(client, selected.slug),
-      activities(client, selected, new URLSearchParams(), directory, staff, 12),
+      activities(client, selected, new URLSearchParams(), directory, staff, 12,ledger),
+      bookingSummary(ledger),
     ]);
     return Response.json(
-      { protocol, sales, staff: directory, activity, exhibition: selected },
+      { protocol, sales, bookings, staff: directory, activity, exhibition: selected },
       { headers: privateHeaders },
     );
   } catch (e) {

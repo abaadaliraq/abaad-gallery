@@ -1,2 +1,3 @@
 import {io} from "next/cache";import {requireRole} from "@/lib/auth/authorization";import {cloudinaryConfig} from "@/lib/protocol/config";import GuestManagement from "@/components/admin/guests/GuestManagement";
-export default async function AdminGuestsSection(){await io();await requireRole('admin');return <GuestManagement cloudName={cloudinaryConfig()?.cloudName||''}/>;}
+import Link from 'next/link';
+export default async function AdminGuestsSection(){await io();await requireRole('admin');return <><p className="mb-4 rounded border border-line bg-surface p-3 text-sm leading-7">هذه قائمة ضيوف الافتتاح. زوار المعرض المسجلون من الباب والمرافقون موجودون في <Link href="/admin/bookings" className="underline">حجوزات المعرض ←</Link></p><GuestManagement cloudName={cloudinaryConfig()?.cloudName||''}/></>;}

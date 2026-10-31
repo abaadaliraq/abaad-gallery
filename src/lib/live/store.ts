@@ -106,7 +106,7 @@ export class LiveStore {
         scope,
         invalidation: 0,
         dependencies:
-          scope === "bookings" &&
+          scope === "overview" ? ["overview","bookings"] : scope === "bookings" &&
           new URLSearchParams(key.split("?")[1] || "").get("q")
             ? ["bookings", "protocol"]
             : [scope],

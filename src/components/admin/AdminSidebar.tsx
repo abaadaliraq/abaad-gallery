@@ -13,7 +13,7 @@ export const adminNavigation = [
   { href: "/admin", label: "الرئيسية", icon: "M3 10L12 3l9 7v10H3z" },
   {
     href: "/admin/guests",
-    label: "إدارة الضيوف",
+    label: "ضيوف الافتتاح",
     icon: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75",
   },
   {

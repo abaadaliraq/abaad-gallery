@@ -77,7 +77,7 @@ export default function BookingDashboard({
     setScanResult(null); setScanBooking(booking); setScanNote(note);
   }, []);
   const booking = h.data?.bookings.find((b) => b.id === selected);
-  const { setToken, setQ, setDate, setStatus, setPage } = h;
+  const { setToken, setQ, setDate, setStatus, setPage, setSource } = h;
   const onRead = useCallback(async (raw: string) => {
     if (!scanGate.current.enter(raw)) return;
     setCamera(false);
@@ -94,6 +94,7 @@ export default function BookingDashboard({
       play(result.kind === "success" ? "scan_success" : "scan_error", eventId);
       onExpand?.();
       if (result.kind === "success") {
+        setSource('all');
         setToken(raw.slice("ABAAD-BOOKING:".length));
         setQ(""); setDate(""); setStatus("all"); setPage(1);
         setSelected(null);
@@ -104,7 +105,7 @@ export default function BookingDashboard({
         play("scan_error", eventId);
       }
     } finally { clearTimeout(timeout); scanGate.current.leave(); }
-  }, [admin, play, onExpand, setToken, setQ, setDate, setStatus, setPage]);
+  }, [admin, play, onExpand, setToken, setQ, setDate, setStatus, setPage, setSource]);
   function search(q: string) {
     const match = /^ABAAD-BOOKING:([a-f0-9]{64})$/.exec(q);
     if (match) void onRead(q);
@@ -213,6 +214,7 @@ export default function BookingDashboard({
           />
         )}
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
+          {admin&&<label className="col-span-2 text-xs text-muted">مصدر الحجز<select value={h.source} onChange={event=>{h.setSource(event.target.value);h.setPage(1);h.setToken('');setSelected(null);}} className="mt-1 min-h-11 w-full rounded border border-line bg-surface px-3 text-sm"><option value="all">جميع الحجوزات</option><option value="walk_in">حجوزات من الباب</option><option value="website">حجوزات الموقع</option></select></label>}
           <label className="col-span-2">
             <span className="text-xs text-muted">
               {admin ? "البحث الموحد — ضيف افتتاح أو حجز معرض" : "البحث في الحجوزات"}
@@ -296,7 +298,7 @@ export default function BookingDashboard({
         ) : (
           h.data && (
             <>
-              {admin && h.q && (
+              {admin && h.q && h.source==='all' && (
                 <section className="space-y-3">
                   <h3 className="text-sm">
                     ضيوف الافتتاح — سجلات مستقلة (
@@ -344,7 +346,7 @@ export default function BookingDashboard({
                         </td>
                         <td className="p-3">
                           {b.full_name}
-                          <small className="block text-muted">حجز معرض</small>
+                          <small className="block text-muted">{b.source==='walk_in'?'حجز من الباب':'حجز من الموقع'}</small>
                         </td>
                         <td className="p-3" dir="ltr">
                           {b.phone}

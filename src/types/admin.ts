@@ -53,6 +53,11 @@ export type SalesSummary = Pick<
   "total" | "available" | "reserved" | "sold"
 >;
 export type ActivityKind =
+  | "walk_in"
+  | "booking_check_in"
+  | "booking_correction"
+  | "booking_cancel"
+  | "booking_reschedule"
   | "check_in"
   | "undo_check_in"
   | "reserve"
@@ -77,12 +82,14 @@ export type ActivityResult = {
   errors: string[];
 };
 export type OverviewData = {
+  bookings?: DataState<BookingSummary>;
   protocol: DataState<ProtocolSummary>;
   sales: DataState<SalesSummary>;
   staff: DataState<StaffDirectory>;
   activity: ActivityResult;
   exhibition: AdminExhibition;
 };
+export type BookingSummary={total:number;confirmed:number;cancelled:number;expected:number;arrived:number;walk_in:number};
 export type GuestManagementData = Omit<GuestSnapshot, "guests"> & {
   guests: AdminGuest[];
   review_total: number;

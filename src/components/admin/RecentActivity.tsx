@@ -71,8 +71,7 @@ export default function RecentActivity({
       )}
       {result.truncated && full && (
         <p className="mt-3 text-xs text-muted">
-          تُعرض أحدث 200 عملية لكل قسم. ضيّق نطاق التاريخ للوصول إلى السجلات
-          الأقدم.
+          السجل المعروض محدود بأحدث العمليات وحجوزات المعرض المحدّثة. قد لا يشمل جميع السجلات الأقدم.
         </p>
       )}
     </section>

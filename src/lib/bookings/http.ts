@@ -7,6 +7,7 @@ import { isUuid } from "@/lib/protocol/search";
 import type { ProtocolMode } from "@/types/protocol";
 import type { BookingSnapshot } from "@/types/bookings";
 import { validateVisitor } from "./visitors";
+import {bookingLedger} from '@/lib/admin/booking-ledger';
 const reply = (body: unknown, status = 200) =>
   Response.json(body, { status, headers: privateHeaders });
 export async function bookingGet(request: Request, mode: ProtocolMode) {
@@ -17,7 +18,7 @@ export async function bookingGet(request: Request, mode: ProtocolMode) {
     date = q.get("date") || null,
     status = q.get("status") || "all",
     page = Number(q.get("page") || 1),
-    token = q.get("token");
+    token = q.get("token"),source=q.get('source')||'all';
   if (
     search.length > 200 ||
     (date && !/^2026-(10|11)-[0-9]{2}$/.test(date)) ||
@@ -26,9 +27,15 @@ export async function bookingGet(request: Request, mode: ProtocolMode) {
     page < 1 ||
     page > 10000 ||
     (token && !/^[a-f0-9]{64}$/.test(token))
+    || !['all','website','walk_in'].includes(source) || (source!=='all'&&!!token)
   )
     return reply({ error: "خيارات غير صالحة." }, 400);
-  const { data, error } = await client.rpc("booking_snapshot", {
+  let data:unknown,error:{code?:string}|null;
+  if(source!=='all'){
+    try{const ledger=await bookingLedger(client,{p_query:search,p_date:date,p_status:status});const matches=ledger.bookings.filter(b=>(b.source||'website')===source);data={...ledger.snapshot,bookings:matches.slice((page-1)*20,page*20),total_matches:matches.length,page,page_size:20};error=null;}
+    catch(e){return reply({error:e instanceof Error?e.message:'تعذر قراءة حجوزات الباب.'},e&&typeof e==='object'&&'code'in e&&e.code==='42501'?403:503);}
+  }else {
+  const result = await client.rpc("booking_snapshot", {
     p_query: search,
     p_date: date,
     p_status: status,
@@ -37,10 +44,12 @@ export async function bookingGet(request: Request, mode: ProtocolMode) {
       ? createHash("sha256").update(token).digest("hex")
       : null,
   });
+  data=result.data;error=result.error;
+  }
   if (error)
     return reply(
       {
-        error: ["PGRST202", "42P01", "42883"].includes(error.code)
+          error: ["PGRST202", "42P01", "42883"].includes(error.code||'')
           ? "حجوزات المعرض بانتظار اعتماد SQL وتهيئة المواعيد."
           : error.code === "42501"
             ? "لم يُمنح حسابك الوصول لهذا المعرض."
@@ -51,7 +60,7 @@ export async function bookingGet(request: Request, mode: ProtocolMode) {
   const snapshot = data as BookingSnapshot;
   if (!snapshot || !Array.isArray(snapshot.bookings))
     return reply({ error: "تعذر التحقق من البيانات." }, 503);
-  if (search && mode === "admin") {
+  if (search && mode === "admin" && source==='all') {
     const opening = await client.rpc("protocol_snapshot", {
       p_slug: protocolSlug(),
       p_query: search,
