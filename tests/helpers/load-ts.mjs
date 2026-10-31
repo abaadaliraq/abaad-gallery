@@ -38,6 +38,7 @@ export function load(entry, overrides = {}, cache = new Map()) {
     setTimeout,
     clearTimeout,
     FormData,
+    crypto: globalThis.crypto,
     console,
     URL,
     URLSearchParams,

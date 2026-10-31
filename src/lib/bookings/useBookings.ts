@@ -46,6 +46,7 @@ export function useBookings(admin: boolean) {
       if (!response.ok)
         throw Object.assign(Error(result.error || "تعذر تأكيد الحفظ."), {
           status: response.status,
+          notSaved: result.not_saved === true,
         });
       return result;
     },

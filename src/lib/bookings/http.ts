@@ -6,6 +6,7 @@ import { protocolSlug } from "@/lib/protocol/config";
 import { isUuid } from "@/lib/protocol/search";
 import type { ProtocolMode } from "@/types/protocol";
 import type { BookingSnapshot } from "@/types/bookings";
+import { validateVisitor } from "./visitors";
 const reply = (body: unknown, status = 200) =>
   Response.json(body, { status, headers: privateHeaders });
 export async function bookingGet(request: Request, mode: ProtocolMode) {
@@ -75,9 +76,20 @@ export async function bookingPost(request: Request, mode: ProtocolMode) {
   } catch {
     return reply({ error: "بيانات غير صالحة." }, 400);
   }
-  let result: { data: unknown; error: { code?: string } | null };
+  let result: { data: unknown; error: { code?: string; message?: string } | null };
   try {
-    if (x.action === "events" && isUuid(x.id)) {
+    if (x.action === "visitors" && isUuid(x.id)) {
+      result = await client.rpc("booking_visitors", {p_id:x.id});
+    } else if ((x.action === "walk_in" || x.action === "visitor") && isUuid(x.operation)) {
+      const checked=validateVisitor(x.data);
+      if(!checked.value)return reply({error:checked.error},400);
+      const reason=typeof x.reason==='string'?x.reason:'';
+      if(reason.length>500)return reply({error:'السبب أطول من الحد المسموح.'},400);
+      const data={...checked.value,...(mode==='admin'?{reason}:{})};
+      if(x.action==='walk_in'&&isUuid(x.slot))result=await client.rpc('booking_walk_in',{p_slot:x.slot,p_data:data,p_operation:x.operation});
+      else if(x.action==='visitor'&&isUuid(x.id)&&(x.mode==='arrival'||x.mode==='complete'))result=await client.rpc('booking_visitor_save',{p_id:x.id,p_data:data,p_mode:x.mode,p_operation:x.operation});
+      else return reply({error:'بيانات تسجيل الزائر غير صالحة.'},400);
+    } else if (x.action === "events" && isUuid(x.id)) {
       result = await client.rpc("booking_events", { p_id: x.id });
     } else if (
       x.action === "arrival" &&
@@ -137,7 +149,14 @@ export async function bookingPost(request: Request, mode: ProtocolMode) {
         p_version: typeof x.version === "number" ? x.version : null,
       });
     } else return reply({ error: "إجراء غير مسموح أو بيانات غير صالحة." }, 400);
-    if (result.error)
+    if (result.error) {
+      if(['visitors','walk_in','visitor'].includes(String(x.action))){
+        const code=result.error.code,message=result.error.message||'';
+        if(['PGRST202','42P01','42883'].includes(code||''))return reply({error:'تسجيل بيانات الأفراد وحجز الباب بانتظار تطبيق ملف booking-visitors.review.sql؛ لم يُحفظ شيء.',not_saved:true},503);
+        const messages:Record<string,string>={visitor_duplicate:'هذا الزائر مسجل لهذا اليوم؛ ابحث عن تسجيله قبل الإضافة.',visitor_count:'العدد مكتمل أو يحتاج مراجعة بعد تصحيح إداري. حدّث الحجز.',visitor_date:'تاريخ الدخول الجديد يجب أن يكون اليوم؛ استكمال البيانات للزيارات السابقة فقط.',visitor_booking_cancelled:'الحجز ملغى ولا يمكن تسجيل زائر عليه.',walk_in_closed:'اختر موعداً مفتوحاً لهذا اليوم لم ينتهِ بعد.',walk_in_capacity:'سعة هذه الساعة مكتملة (60 زائراً).',walk_in_daily_capacity:'اكتمل سقف اليوم (200 زائر).',walk_in_existing_booking:'يوجد حجز بهذا الاسم والهاتف لهذا اليوم. ابحث عنه وسجّل الزائر داخله.',admin_reason_required:'تسجيل الوصول خارج تاريخ الحجز يحتاج إجراءً إدارياً وسبباً واضحاً.',operation_conflict:'العملية السابقة تخص بيانات أخرى؛ حدّث الحجز قبل المتابعة.'};
+        if(code==='42501')return reply({error:'حسابك لا يملك صلاحية هذا الإجراء.'},403);
+        return reply({error:messages[message]||'لم يُؤكد تسجيل الزائر. راجع البيانات والموعد والعدد ثم حدّث الحجز.'},409);
+      }
       return reply(
         {
           error:
@@ -147,6 +166,7 @@ export async function bookingPost(request: Request, mode: ProtocolMode) {
         },
         409,
       );
+    }
     return reply(result.data);
   } catch {
     return reply(

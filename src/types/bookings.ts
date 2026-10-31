@@ -1,4 +1,5 @@
 import type { Guest } from "./protocol";
+export type BookingVisitor = {id:string;position:number;full_name:string;phone:string;address:string;visit_date:string;entry_kind:'arrival'|'complete'|'walk_in';created_at:string};
 export type BookingSlot = {
   id: string;
   visit_date: string;
@@ -68,6 +69,9 @@ export type BookingSnapshot = {
   opening_error?: string;
 };
 export type BookingFunctions = {
+  booking_visitors: {Args:{p_id:string};Returns:unknown};
+  booking_visitor_save: {Args:{p_id:string;p_data:unknown;p_mode:string;p_operation:string};Returns:unknown};
+  booking_walk_in: {Args:{p_slot:string;p_data:unknown;p_operation:string};Returns:unknown};
   booking_snapshot: {
     Args: {
       p_query?: string;

@@ -6,13 +6,14 @@ import {
 } from "@/components/live/LiveStatus";
 import { useLiveSafety } from "@/lib/live/useLiveSafety";
 import { useLiveStore } from "@/lib/live/LiveProvider";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   BookingEvent,
   BookingSlot,
   ExhibitionBooking,
 } from "@/types/bookings";
 import ProtocolDialog from "@/components/protocol/ProtocolDialog";
+import BookingVisitors from './BookingVisitors';
 type Send = (body: Record<string, unknown>) => Promise<unknown>;
 export default function BookingDetails({
   disabled = false,
@@ -35,7 +36,7 @@ export default function BookingDetails({
   onSaved: () => Promise<void>;
   send: Send;
 }) {
-  const [delta, setDelta] = useState(1),
+  const [delta, setDelta] = useState(admin ? -1 : 1),
     [reason, setReason] = useState(""),
     [target, setTarget] = useState(""),
     [confirmed, setConfirmed] = useState(false),
@@ -44,6 +45,9 @@ export default function BookingDetails({
     [events, setEvents] = useState<BookingEvent[] | null>(null);
   const [pendingAction, setPendingAction] = useState("");
   const [hasPending, setHasPending] = useState(false);
+  const [visitorPending,setVisitorPending]=useState(false);
+  const [visitorsReady,setVisitorsReady]=useState<boolean|null>(null);
+  const onVisitorReady=useCallback((value:boolean|null)=>{setVisitorsReady(value);if(value===true)setDelta(previous=>previous>0?-1:previous);else if(value===false)setDelta(previous=>previous<1?1:previous);},[]);
   const pending = useRef<{
       key: string;
       payload: Record<string, unknown>;
@@ -77,7 +81,7 @@ export default function BookingDetails({
     };
   }, [b.id, b.updated_at, send, detailStore]);
   async function act(action: string) {
-    if (lock.current || !confirmed || disabled || blocked) return;
+    if (lock.current || !confirmed || disabled || blocked || visitorPending) return;
     lock.current = true;
     setBusy(true);
     setError("");
@@ -120,7 +124,7 @@ export default function BookingDetails({
       title="تفاصيل حجز المعرض"
       fullScreen={fullScreen}
       onClose={() => {
-        if (!busy) onClose();
+        if (!busy && !visitorPending) onClose();
       }}
     >
       <fieldset
@@ -145,16 +149,17 @@ export default function BookingDetails({
         {b.notes && <p>{b.notes}</p>}
         {scanNote && <p role="status" className="rounded border border-line bg-surface p-3 text-muted">{scanNote}</p>}
         {differentDate && <p className="text-sm text-muted">تسجيل الوصول خارج تاريخ الحجز يتطلب الإجراء الإداري المعتمد.</p>}
-        {b.status === "confirmed" && (
+        <BookingVisitors booking={b} admin={admin} disabled={disabled||blocked||busy||hasPending} send={send} onSaved={onSaved} onPending={setVisitorPending} onReady={onVisitorReady}/>
+        {(admin || visitorsReady===false) && b.status === "confirmed" && (
           <>
             <label className="block">
-              {admin ? "عدد الداخلين / التصحيح السالب" : "عدد الداخلين"}
+              {visitorsReady===false?'عدد الداخلين / التصحيح الإداري':'تصحيح عدد الواصلين (سالب فقط)'}
               <input
                 type="number"
                 min={admin ? -b.checked_in_guest_count : 1}
-                max={b.guest_count - b.checked_in_guest_count}
+                max={visitorsReady===false?b.guest_count-b.checked_in_guest_count:-1}
                 value={delta}
-                disabled={busy || hasPending}
+                disabled={busy || hasPending || visitorPending || (visitorsReady!==false&&b.checked_in_guest_count===0)}
                 onChange={(e) => setDelta(Number(e.target.value))}
                 className="mx-3 w-24 rounded border border-line bg-background p-2"
               />
@@ -183,9 +188,10 @@ export default function BookingDetails({
               type="button"
               disabled={
                 busy ||
+                visitorPending ||
                 !confirmed ||
                 (!admin && differentDate) ||
-                delta === 0 ||
+                (visitorsReady===false?delta===0:delta>=0) ||
                 delta > b.guest_count - b.checked_in_guest_count ||
                 delta < (admin ? -b.checked_in_guest_count : 1) ||
                 (admin &&
@@ -200,7 +206,7 @@ export default function BookingDetails({
                   <Spinner /> جارٍ التحقق…
                 </>
               ) : (
-                "تسجيل الوصول / التصحيح"
+                visitorsReady===false?"تسجيل الوصول / التصحيح":"تصحيح العدد إدارياً"
               )}
             </button>
             {admin && b.checked_in_guest_count === 0 && (

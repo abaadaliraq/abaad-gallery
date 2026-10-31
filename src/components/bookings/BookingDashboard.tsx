@@ -9,6 +9,8 @@ import SlotManagement from "./SlotManagement";
 import GuestList from "@/components/protocol/GuestList";
 import GuestDetails from "@/components/protocol/GuestDetails";
 import type { Guest } from "@/types/protocol";
+import ProtocolDialog from '@/components/protocol/ProtocolDialog';
+import VisitorEntryForm from './VisitorEntryForm';
 import { useProtocolSounds } from "@/lib/audio/useProtocolSounds";
 import { verifyBookingCode, ScanGate, currentScannedBooking, type ScanResult } from "@/lib/bookings/scan";
 export type BookingToolbarActions = {
@@ -45,6 +47,7 @@ export default function BookingDashboard({
   const [scanBooking, setScanBooking] = useState<ExhibitionBooking | null>(null);
   const [scanNote, setScanNote] = useState<string | undefined>();
   const [dismissedNotice, setDismissedNotice] = useState("");
+  const [walkIn,setWalkIn]=useState(false),[walkInPending,setWalkInPending]=useState(false);
   const scanGate = useRef(new ScanGate());
   const scanRequest = useRef<AbortController | null>(null);
   const scanSequence = useRef(0);
@@ -124,7 +127,7 @@ export default function BookingDashboard({
         <div hidden={collapsed}>
           <h2 className="text-xl">حجوزات المعرض</h2>
           <p className="mt-1 text-sm text-muted">
-            31 أكتوبر – 9 نوفمبر 2026 · الدخول مجاني بالحجز المسبق
+            31 أكتوبر – 9 نوفمبر 2026 · الدخول مجاني
           </p>
         </div>
         <div className="flex gap-3">
@@ -180,6 +183,7 @@ export default function BookingDashboard({
         booking={currentScannedBooking(scanBooking, h.data?.bookings || [])}
         slots={h.data?.slots || []} admin={admin} disabled={!!h.error}
         send={h.send} onSaved={h.refresh} onClose={() => setScanBooking(null)} />}
+      {walkIn&&<ProtocolDialog title="حجز من الباب" onClose={()=>{if(!walkInPending)setWalkIn(false);}}><p className="mb-4 text-xs leading-6 text-muted">أدخل بيانات كل زائر على حدة. الحجز وتسجيل الوصول يُحفظان معاً، ضمن سعة الموعد واليوم.</p><VisitorEntryForm kind="walk_in" slots={h.data?.slots||[]} admin={admin} disabled={!!h.error||!h.data} send={h.send} onSaved={h.refresh} onPending={setWalkInPending}/></ProtocolDialog>}
       <div id={renderToolbar ? "bookings-panel" : undefined} hidden={collapsed} className="space-y-4">
         <div className="compact-stats grid grid-cols-3 gap-1.5 sm:gap-3 lg:grid-cols-5">
           {[
@@ -200,6 +204,7 @@ export default function BookingDashboard({
             </div>
           ))}
         </div>
+        <div className="flex justify-end"><button type="button" disabled={!h.data||!!h.error||h.loading} onClick={()=>setWalkIn(true)} className="min-h-11 rounded border border-line bg-surface px-4 text-sm disabled:opacity-50">+ حجز من الباب</button></div>
         {admin && h.data && (
           <SlotManagement
             slots={h.data.slots}
