@@ -6,7 +6,8 @@ import { protocolSlug } from "@/lib/protocol/config";
 import { isUuid } from "@/lib/protocol/search";
 import type { ProtocolMode } from "@/types/protocol";
 import type { BookingSnapshot } from "@/types/bookings";
-import { validateVisitor } from "./visitors";
+import { validateVisitor, baghdadToday } from "./visitors";
+import { previousVisitDay } from './presentation';
 import {bookingLedger} from '@/lib/admin/booking-ledger';
 const reply = (body: unknown, status = 200) =>
   Response.json(body, { status, headers: privateHeaders });
@@ -14,8 +15,9 @@ export async function bookingGet(request: Request, mode: ProtocolMode) {
   const client = await protocolClient(mode);
   if (!client) return reply({ error: "تعذر الاتصال." }, 503);
   const q = new URL(request.url).searchParams;
+  const dateFilter = q.get('date') || '';
   const search = q.get("q") || "",
-    date = q.get("date") || null,
+    date = dateFilter === 'today' ? baghdadToday() : dateFilter === 'yesterday' ? previousVisitDay(baghdadToday()) : dateFilter || null,
     status = q.get("status") || "all",
     page = Number(q.get("page") || 1),
     token = q.get("token"),source=q.get('source')||'all';
@@ -69,7 +71,7 @@ export async function bookingGet(request: Request, mode: ProtocolMode) {
     if (opening.error) snapshot.opening_error = "تعذر البحث في ضيوف الافتتاح.";
     else snapshot.opening = opening.data as BookingSnapshot["opening"];
   }
-  return reply(snapshot);
+  return reply({...snapshot,filter_date:date,filter_key:dateFilter});
 }
 export async function bookingPost(request: Request, mode: ProtocolMode) {
   const client = await protocolClient(mode);

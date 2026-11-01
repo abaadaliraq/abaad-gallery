@@ -8,7 +8,7 @@ export function useBookings(admin: boolean) {
   const router = useRouter(),
     endpoint = admin ? "/api/admin/bookings" : "/api/protocol/bookings";
   const [q, setQ] = useState(""),
-    [date, setDate] = useState(""),
+    [date, setDate] = useState("today"),
     [status, setStatus] = useState("all"),
     [page, setPage] = useState(1),
     [token, setToken] = useState("");
@@ -54,11 +54,16 @@ export function useBookings(admin: boolean) {
     },
     [endpoint, router, live.error],
   );
+  // Do not show yesterday's retained cache while another day's request loads.
+  const data = live.data?.filter_key === date ? live.data : null;
   return {
     ...live,
+    data,
+    loading: !data && !live.error,
     q,
     setQ,
-    date,
+    date: date === 'today' || date === 'yesterday' ? data?.filter_date || '' : date,
+    dateFilter: date,
     setDate,
     status,
     setStatus,

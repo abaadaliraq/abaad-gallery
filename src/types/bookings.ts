@@ -39,6 +39,8 @@ export type BookingEvent = {
   actor_id: string;
 };
 export type BookingSnapshot = {
+  filter_date?: string | null;
+  filter_key?: string;
   bookings: ExhibitionBooking[];
   total_matches: number;
   page: number;

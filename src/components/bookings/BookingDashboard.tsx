@@ -11,6 +11,7 @@ import GuestDetails from "@/components/protocol/GuestDetails";
 import type { Guest } from "@/types/protocol";
 import ProtocolDialog from '@/components/protocol/ProtocolDialog';
 import VisitorEntryForm from './VisitorEntryForm';
+import { bookingSubmittedAt, bookingRowNumber } from '@/lib/bookings/presentation';
 import { useProtocolSounds } from "@/lib/audio/useProtocolSounds";
 import { verifyBookingCode, ScanGate, currentScannedBooking, type ScanResult } from "@/lib/bookings/scan";
 export type BookingToolbarActions = {
@@ -116,6 +117,9 @@ export default function BookingDashboard({
     }
     setSelected(null);
   }
+  function chooseDay(day: string) {
+    h.setDate(day); h.setToken(''); h.setPage(1); setSelected(null);
+  }
   return (
     <section aria-label="حجوزات المعرض" className={renderToolbar ? "contents" : "space-y-4"}>
       {renderToolbar ? <ToolbarSlot render={renderToolbar} actions={{
@@ -183,9 +187,10 @@ export default function BookingDashboard({
         scanNote={scanNote}
         booking={currentScannedBooking(scanBooking, h.data?.bookings || [])}
         slots={h.data?.slots || []} admin={admin} disabled={!!h.error}
-        send={h.send} onSaved={h.refresh} onClose={() => setScanBooking(null)} />}
+        send={h.send} onSaved={h.refresh} onClose={() => {setScanBooking(null);h.setToken('');h.setDate('today');h.setPage(1);}} />}
       {walkIn&&<ProtocolDialog title="حجز من الباب" onClose={()=>{if(!walkInPending)setWalkIn(false);}}><p className="mb-4 text-xs leading-6 text-muted">أدخل بيانات كل زائر على حدة. الحجز وتسجيل الوصول يُحفظان معاً، ضمن سعة الموعد واليوم.</p><VisitorEntryForm kind="walk_in" slots={h.data?.slots||[]} admin={admin} disabled={!!h.error||!h.data} send={h.send} onSaved={h.refresh} onPending={setWalkInPending}/></ProtocolDialog>}
       <div id={renderToolbar ? "bookings-panel" : undefined} hidden={collapsed} className="space-y-4">
+        <p className="text-xs text-muted">إحصائيات المعرض · جميع الأيام</p>
         <div className="compact-stats grid grid-cols-3 gap-1.5 sm:gap-3 lg:grid-cols-5">
           {[
             ["إجمالي الحجوزات", "total"],
@@ -213,6 +218,12 @@ export default function BookingDashboard({
             onSaved={h.refresh}
           />
         )}
+        <div className="flex flex-wrap items-center gap-2" aria-label="أيام الزيارة">
+          {[['today','اليوم'],['yesterday','أمس'],['','جميع الأيام']].map(([value,label]) => <button key={label} type="button"
+            aria-pressed={h.dateFilter===value}
+            onClick={()=>chooseDay(value)}
+            className="min-h-10 rounded border border-line bg-surface px-3 text-xs aria-pressed:bg-foreground aria-pressed:text-surface">{label}</button>)}
+        </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
           {admin&&<label className="col-span-2 text-xs text-muted">مصدر الحجز<select value={h.source} onChange={event=>{h.setSource(event.target.value);h.setPage(1);h.setToken('');setSelected(null);}} className="mt-1 min-h-11 w-full rounded border border-line bg-surface px-3 text-sm"><option value="all">جميع الحجوزات</option><option value="walk_in">حجوزات من الباب</option><option value="website">حجوزات الموقع</option></select></label>}
           <label className="col-span-2">
@@ -236,10 +247,7 @@ export default function BookingDashboard({
               max="2026-11-09"
               value={h.date}
               onChange={(e) => {
-                h.setDate(e.target.value);
-                h.setPage(1);
-                h.setToken("");
-                setSelected(null);
+                chooseDay(e.target.value);
               }}
               className="mt-1 min-h-12 w-full rounded border border-line bg-surface px-3"
             />
@@ -264,6 +272,7 @@ export default function BookingDashboard({
         </div>
         <div className="flex justify-between text-xs text-muted">
           <p aria-live="polite">
+            {h.date ? 'يوم الزيارة: '+h.date+' · ' : h.dateFilter==='today' ? 'زوار اليوم · ' : h.dateFilter==='yesterday' ? 'زوار أمس · ' : 'جميع أيام الزيارة · '}
             {h.loading
               ? "جارٍ التحقق…"
               : h.data
@@ -323,10 +332,12 @@ export default function BookingDashboard({
                   <thead>
                     <tr className="border-b border-line text-xs text-muted">
                       {[
+                        "تسلسل",
                         "رقم الحجز",
                         "الاسم",
                         "الهاتف",
-                        "التاريخ والوقت",
+                        "موعد الزيارة",
+                        "وقت إرسال الحجز · بغداد",
                         "عدد الأشخاص",
                         "الحالة",
                         "وصل / متبقٍ",
@@ -339,8 +350,9 @@ export default function BookingDashboard({
                     </tr>
                   </thead>
                   <tbody>
-                    {h.data.bookings.map((b) => (
+                    {h.data.bookings.map((b,index) => (
                       <tr key={b.id} className="border-b border-line">
+                        <td className="p-3 tabular-nums">{bookingRowNumber(h.data!.page,h.data!.page_size,index)}</td>
                         <td className="max-w-36 break-all p-3" dir="ltr">
                           {b.booking_reference}
                         </td>
@@ -356,6 +368,7 @@ export default function BookingDashboard({
                           <br />
                           {b.start_time.slice(0, 5)} – {b.end_time.slice(0, 5)}
                         </td>
+                        <td className="p-3 text-xs tabular-nums"><time dateTime={b.created_at}>{bookingSubmittedAt(b.created_at)}</time></td>
                         <td className="p-3">{b.guest_count}</td>
                         <td className="p-3">
                           {b.status === "confirmed" ? "مؤكد" : "ملغى"}
@@ -378,7 +391,7 @@ export default function BookingDashboard({
                     ))}
                     {!h.data.bookings.length && (
                       <tr>
-                        <td colSpan={8} className="p-8 text-center text-muted">
+                        <td colSpan={10} className="p-8 text-center text-muted">
                           لا توجد حجوزات تطابق البحث. لا تظهر حجوزات الزيارات
                           الاعتيادية هنا.
                         </td>

@@ -14,6 +14,7 @@ import type {
 } from "@/types/bookings";
 import ProtocolDialog from "@/components/protocol/ProtocolDialog";
 import BookingVisitors from './BookingVisitors';
+import { bookingSubmittedAt } from '@/lib/bookings/presentation';
 type Send = (body: Record<string, unknown>) => Promise<unknown>;
 export default function BookingDetails({
   disabled = false,
@@ -136,9 +137,10 @@ export default function BookingDetails({
           {b.booking_reference}
         </p>
         <p>
-          {b.visit_date} · {b.start_time.slice(0, 5)} – {b.end_time.slice(0, 5)}{" "}
+          الزيارة: {b.visit_date} · {b.start_time.slice(0, 5)} – {b.end_time.slice(0, 5)}{" "}
           · بغداد
         </p>
+        <p className="text-xs text-muted">وقت إرسال الحجز: <time dateTime={b.created_at}>{bookingSubmittedAt(b.created_at)}</time> · بتوقيت بغداد</p>
         <p dir="ltr">{b.phone}</p>
         {b.gender && <p>الجنس: {b.gender === 'male' ? 'ذكر' : 'أنثى'}</p>}
         {b.email && <p>{b.email}</p>}
