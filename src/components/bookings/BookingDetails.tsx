@@ -140,6 +140,7 @@ export default function BookingDetails({
           · بغداد
         </p>
         <p dir="ltr">{b.phone}</p>
+        {b.gender && <p>الجنس: {b.gender === 'male' ? 'ذكر' : 'أنثى'}</p>}
         {b.email && <p>{b.email}</p>}
         <p>
           عدد الزوار: {b.guest_count} · دخل: {b.checked_in_guest_count} · متبقٍ:{" "}

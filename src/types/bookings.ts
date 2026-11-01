@@ -11,6 +11,7 @@ export type BookingSlot = {
   version: number;
 };
 export type ExhibitionBooking = {
+  gender?: 'male' | 'female' | null;
   source?: 'website' | 'walk_in';
   id: string;
   booking_reference: string;
